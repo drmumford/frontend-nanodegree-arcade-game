@@ -7,7 +7,7 @@ var Enemy = function (id) {
 
     // Initial location.
     this.x = -100;
-    this.y = this.row * 82;
+    this.y = (this.row * 82) - 18;
 
     // Updates to ignore before becoming active.
     this.delayCounter = Math.floor(Math.random() * 100) + 1;
@@ -52,7 +52,7 @@ Enemy.prototype.update = function (dt) {
                 this.row = Math.floor(Math.random() * 3) + 1;
                 this.color = "red";
                 this.x = -100;
-                this.y = this.row * 82;
+                this.y = (this.row * 82) - 18;
                 this.delayCounter = Math.floor(Math.random() * 100) + 1;
                 this.active = false;
                 
