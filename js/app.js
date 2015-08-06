@@ -1,66 +1,97 @@
-//
-// Enemy Pseudoclass.
-//
+//---------------------------------
+// Game Board Pseudoclass.
+//---------------------------------
 
-var Enemy = function(id) {
-    this.id = id;
-
-    // Initialize/reset enemy properties.
-    this.renewProperties = function() {
-        this.row = Math.floor(Math.random() * 3) + 1; // Row 1-3.
-
-    this.x = -100;
-    this.y = (this.row * 82) - 18;
-
-        // Game ticks to ignore before becoming active. This mixes up
-        // when a bug reappears after traversing a row of the game board.
-        this.delay = Math.floor(Math.random() * 100) + 1;
-
-    // Speed.
-    var minSpeed = 75;
-    var maxSpeed = 300;
-    this.speed = minSpeed + Math.floor(Math.random() * (maxSpeed - minSpeed + 1));
-    if (this.speed > maxSpeed) {
-        this.speed = maxSpeed;
-    }
-
-    // Direction.
-    this.direction = Math.floor(Math.random() * 2) + 1;
-
-        // Color.
-        this.color = "red";
-
-    // The image/sprite for our enemies.
-    this.sprite = 'images/enemy-bug.png';
-        //this.width = Resources.get(this.sprite).width;
-        //this.height = Resources.get(this.sprite).height;
-
-        console.log("Bug " + this.id + ": " +
-            "Row " + this.row + ", " +
-            "Color = " + this.color + ", " +
-            "Delay = " + this.delay + ", " +
-            "Speed = " + this.speed);
-    }
-
-    this.renewProperties();
+// Constructor.
+function GameBoard(rows, columns) {
+    this.Rows = rows;
+    this.Columns = columns;
 }
 
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
+// Pseudoclass properties.
+GameBoard.TileWidth = 100;
+GameBoard.TileHeight = 82;
+
+// Pseudoclass methods.
+GameBoard.prototype.getWidth = function() {
+    return this.Columns * GameBoard.TileWidth;
+}
+
+GameBoard.prototype.Height = function() {
+    return this.Rows * GameBoard.TileHeight;
+}
+
+GameBoard.prototype.getRandomEnemyRow = function() {
+    return GameBoard.Random(1, this.getMaxEnemyRow());
+}
+
+GameBoard.prototype.getMinEnemyRow = function() {
+    return 1;
+}
+
+GameBoard.prototype.getMaxEnemyRow = function() {
+    return this.Rows - 2; // don't count first (water) or last (grass) rows.
+}
+
+// Generate a random number x, where lowLimit <= x <= highLimit.
+GameBoard.Random = function(lowLimit, highLimit) {
+    return lowLimit + Math.floor(Math.random() * (highLimit - lowLimit + 1));
+}
+
+//---------------------------------
+// Enemy Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function Enemy(gameBoard, id) {
+    this.gameBoard = gameBoard;
+    this.id = id;
+
+    // Set initial properties.
+    this.setProperties();
+}
+
+// Pseudoclass properties.
+Enemy.MinDelay = 0;   // Delay is the time in game ticks that an enemy waits
+Enemy.MaxDelay = 100; // before starting a(nother) crossing of the game board.
+
+Enemy.MinSpeed = 75;
+Enemy.MaxSpeed = 300;
+
+// Pseudoclass methods.
+Enemy.prototype.setProperties = function() {
+
+    var verticalOffset = 18; // to center enemy in row.
+    this.row = gameBoard.getRandomEnemyRow();
+
+    this.x = -GameBoard.TileWidth; // off canvas.
+    this.y = (this.row * GameBoard.TileHeight) - verticalOffset;
+
+    this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
+
+    this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
+    this.color = "red";
+    this.sprite = 'images/enemy-bug.png';
+    //this.width = Resources.get(this.sprite).width;
+    //this.height = Resources.get(this.sprite).height;
+
+    console.log("Bug " + this.id + ": " +
+        "Row " + this.row + ", " +
+        "Color = " + this.color + ", " +
+        "Delay = " + this.delay + ", " +
+        "Speed = " + this.speed);
+}
+
+// Update the enemy's position, required method for game.
+// Parameter: dt, a time delta between ticks. We multiply movement by the
+// dt parameter which ensures the game runs at the same speed for all computers.
 Enemy.prototype.update = function(dt) {
     if (this.delay > 0) {
         this.delay--;
     } else {
-        // Multiply movement by the dt parameter which ensures
-        // the game runs at the same speed for all computers.
         this.x += (this.speed * dt);
-        if (this.direction) {
-            // Enemies go left-to-right.
-            if (this.x > (5 * 100)) {
-                this.renewProperties();
-        }
-        } else {
-            // Enemies go right-to-left.
+        if (this.x > gameBoard.getWidth()) {
+            this.setProperties(); // for next run.
         }
     }
 }
@@ -70,12 +101,17 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 
-//
+//---------------------------------
 // Player Pseudoclass.
-//
-var Player = function() {
+//---------------------------------
+
+// Constructor.
+function Player(gameBoard) {
+
+    this.gameBoard = gameBoard;
+
     // Initial location.
-    this.x = 2 * 100;
+    this.x = gameBoard.getWidth() / 2 - 50; //2 * 100;
     this.y = 4 * 82;
 
     // The image/sprite for our player.
@@ -124,16 +160,19 @@ Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 
+// Instantiate our Game Board object.
+var gameBoard = new GameBoard(5, 5);
+
 // Instantiate enemy objects.
 var allEnemies = [];
-allEnemies.push(new Enemy(1));
-allEnemies.push(new Enemy(2));
-allEnemies.push(new Enemy(3));
-allEnemies.push(new Enemy(4));
-allEnemies.push(new Enemy(5));
+allEnemies.push(new Enemy(gameBoard, 1));
+allEnemies.push(new Enemy(gameBoard, 2));
+allEnemies.push(new Enemy(gameBoard, 3));
+allEnemies.push(new Enemy(gameBoard, 4));
+allEnemies.push(new Enemy(gameBoard, 5));
 
 // Instantiate our single player.
-var player = new Player();
+var player = new Player(gameBoard);
 
 // Handle 'keyup' events for allowed keys.
 document.addEventListener('keyup', function(e) {
