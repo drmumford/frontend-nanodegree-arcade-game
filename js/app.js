@@ -9,28 +9,22 @@ function GameBoard(rows, columns) {
 }
 
 // Pseudoclass properties.
-GameBoard.TileWidth = 100;
-GameBoard.TileHeight = 82;
+GameBoard.TileWidth = 101;
+GameBoard.TileHeight = 83;
 
 // Pseudoclass methods.
 GameBoard.prototype.getWidth = function() {
-    return this.Columns * GameBoard.TileWidth;
+    return (this.Columns - 1) * GameBoard.TileWidth;
 }
 
-GameBoard.prototype.Height = function() {
+GameBoard.prototype.getHeight = function() {
     return this.Rows * GameBoard.TileHeight;
 }
 
 GameBoard.prototype.getRandomEnemyRow = function() {
-    return GameBoard.Random(1, this.getMaxEnemyRow());
-}
-
-GameBoard.prototype.getMinEnemyRow = function() {
-    return 1;
-}
-
-GameBoard.prototype.getMaxEnemyRow = function() {
-    return this.Rows - 2; // don't count first (water) or last (grass) rows.
+    // A random rock tile row. Enemies don't use the first
+    // row (water) or last row (grass); hence the minus two.
+    return GameBoard.Random(1, this.Rows - 2);
 }
 
 // Generate a random number x, where lowLimit <= x <= highLimit.
@@ -90,7 +84,7 @@ Enemy.prototype.update = function(dt) {
         this.delay--;
     } else {
         this.x += (this.speed * dt);
-        if (this.x > gameBoard.getWidth()) {
+        if (this.x > ctx.canvas.width) {
             this.setProperties(); // for next run.
         }
     }
@@ -111,8 +105,8 @@ function Player(gameBoard) {
     this.gameBoard = gameBoard;
 
     // Initial location.
-    this.x = gameBoard.getWidth() / 2 - 50; //2 * 100;
-    this.y = 4 * 82;
+    this.x = gameBoard.getWidth() / 2;
+    this.y = (gameBoard.Rows - 1) * GameBoard.TileHeight;
 
     // The image/sprite for our player.
     this.sprite = 'images/char-boy.png';
@@ -126,33 +120,49 @@ Player.prototype.update = function() {
 }
 
 Player.prototype.handleInput = function(key) {
-    // Determine the new position based on key input.
-    var newX;
-    var newY;
-
     switch (key) {
         case "left":
-            newX = this.x - 100;
+            this.moveLeft();
             break;
         case "right":
-            newX = this.x + 100;
+            this.moveRight();
             break;
         case "up":
-            newY = this.y - 82;
+            this.moveUp();
             break;
         case "down":
-            newY = this.y + 82;
+            this.moveDown();
             break;
     }
-
-    // Update actual positions if new positions are in-bounds.
-    if (newX >= 0 && newX <= (4 * 100)) {
-        this.x = newX;
-    }
-    if (newY >= 0 && newY <= (4 * 82)) {
-        this.y = newY;
-    }
     console.log("x, y = " + this.x + ", " + this.y);
+}
+
+Player.prototype.moveLeft = function() {
+    // If we're not in the far left column, then we can move left.
+    if (this.x >= GameBoard.TileWidth) {
+        this.x -= GameBoard.TileWidth;
+    }
+}
+
+Player.prototype.moveRight = function() {
+    // If we're not in the far right column, then we can move right.
+    if (this.x + GameBoard.TileWidth < ctx.canvas.width) {
+        this.x += GameBoard.TileWidth;
+    }
+}
+
+Player.prototype.moveUp = function() {
+    // If we're not in the top row, then we can move up.
+    if (this.y - GameBoard.TileHeight >= 0) {
+        this.y -= GameBoard.TileHeight;
+    }
+}
+
+Player.prototype.moveDown = function() {
+    // If we're not in the bottom row, then we can move down.
+    if (this.y + GameBoard.TileHeight < gameBoard.getHeight()) {
+        this.y += GameBoard.TileHeight;
+    }
 }
 
 // Draw the player on the screen, required method for game
