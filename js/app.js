@@ -11,6 +11,7 @@ function GameBoard(rows, columns) {
 // Pseudoclass properties.
 GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
+GameBoard.WaterRow = 0; // always.
 
 // Pseudoclass methods.
 GameBoard.prototype.getWidth = function() {
@@ -25,6 +26,11 @@ GameBoard.prototype.getRandomEnemyRow = function() {
     // A random rock tile row. Enemies don't use the first
     // row (water) or last row (grass); hence the minus two.
     return GameBoard.Random(1, this.Rows - 2);
+}
+
+GameBoard.prototype.getGrassRow = function() {
+    // The grass row is always the last (bottom) row.
+    return this.Rows - 1;
 }
 
 // Generate a random number x, where lowLimit <= x <= highLimit.
@@ -52,28 +58,38 @@ Enemy.MaxDelay = 100; // before starting a(nother) crossing of the game board.
 Enemy.MinSpeed = 75;
 Enemy.MaxSpeed = 300;
 
+Enemy.Width = 101; // total, including non-visible portion.
+Enemy.OffsetX = 50.5; // to detect collisions; 1/2 the visible portion of enemy.
+Enemy.OffsetY = -18; // to vertically center an enemy in their row.
+
+Enemy.prototype.leftX = function() {
+    return this.x + (Enemy.Width / 2) - Enemy.OffsetX;
+}
+
+Enemy.prototype.rightX = function() {
+    return this.x + (Enemy.Width / 2) + Enemy.OffsetX;
+}
+
 // Pseudoclass methods.
 Enemy.prototype.setProperties = function() {
-
-    var verticalOffset = 18; // to center enemy in row.
     this.row = gameBoard.getRandomEnemyRow();
 
     this.x = -GameBoard.TileWidth; // off canvas.
-    this.y = (this.row * GameBoard.TileHeight) - verticalOffset;
+    this.y = (this.row * GameBoard.TileHeight) + Enemy.OffsetY;
 
     this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
 
     this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
     this.color = "red";
     this.sprite = 'images/enemy-bug.png';
-    //this.width = Resources.get(this.sprite).width;
-    //this.height = Resources.get(this.sprite).height;
 
     console.log("Bug " + this.id + ": " +
         "Row " + this.row + ", " +
         "Color = " + this.color + ", " +
         "Delay = " + this.delay + ", " +
-        "Speed = " + this.speed);
+        "Speed = " + this.speed + ", " +
+        "X = " + this.x
+        );
 }
 
 // Update the enemy's position, required method for game.
@@ -101,22 +117,54 @@ Enemy.prototype.render = function() {
 
 // Constructor.
 function Player(gameBoard) {
-
     this.gameBoard = gameBoard;
-
-    // Initial location.
-    this.x = gameBoard.getWidth() / 2;
-    this.y = (gameBoard.Rows - 1) * GameBoard.TileHeight;
+    this.init();
 
     // The image/sprite for our player.
     this.sprite = 'images/char-boy.png';
 }
 
+// Pseudoclass properties.
+Player.Width = 101; // total, including non-visible portion.
+Player.OffsetX = 30; // to detect collisions; 1/2 the visible portion of player.
+Player.OffsetY = -8; // to vertically center the player in their row.
+
+Player.prototype.init = function() {
+    this.row = gameBoard.getGrassRow();
+    this.x = gameBoard.getWidth() / 2;
+    this.y = gameBoard.getHeight() + Player.OffsetY;
+}
+
+Player.prototype.leftX = function() {
+    return this.x + (Player.Width / 2) - Player.OffsetX;
+}
+
+Player.prototype.rightX = function() {
+    return this.x + (Player.Width / 2) + Player.OffsetX;
+}
+
 // Update the player's position; basically detect collisions
 // and reset the player position, if necessary.
 Player.prototype.update = function() {
-    // Determine if our player shares a space
-    // with any enemies.
+    this.detectCollisions();
+}
+
+Player.prototype.detectCollisions = function() {
+    // Iterate through each enemy and detect if any overlap
+    // with the current player position.
+    for (var i = 0; i < allEnemies.length; ++i) {
+        var enemy = allEnemies[i];
+        if ((enemy.row == this.row) &&
+            (this.leftX() < enemy.rightX() && this.rightX() > enemy.leftX())) {
+            console.log("Collision with Enemy " + enemy.id + "!");
+            this.reset();
+            break;
+        }
+    }
+}
+
+Player.prototype.reset = function() {
+    this.init();
 }
 
 Player.prototype.handleInput = function(key) {
@@ -134,7 +182,7 @@ Player.prototype.handleInput = function(key) {
             this.moveDown();
             break;
     }
-    console.log("x, y = " + this.x + ", " + this.y);
+    console.log("Player in Row " + this.row + " (" + this.x + ", " + this.y + ")");
 }
 
 Player.prototype.moveLeft = function() {
@@ -153,7 +201,8 @@ Player.prototype.moveRight = function() {
 
 Player.prototype.moveUp = function() {
     // If we're not in the top row, then we can move up.
-    if (this.y - GameBoard.TileHeight >= 0) {
+    if (this.row > GameBoard.WaterRow) {
+        this.row--;
         this.y -= GameBoard.TileHeight;
     }
 }
@@ -161,6 +210,7 @@ Player.prototype.moveUp = function() {
 Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
     if (this.y + GameBoard.TileHeight <= gameBoard.getHeight()) {
+        this.row++;
         this.y += GameBoard.TileHeight;
     }
 }
