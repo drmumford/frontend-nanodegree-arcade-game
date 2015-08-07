@@ -18,7 +18,7 @@ GameBoard.prototype.getWidth = function() {
 }
 
 GameBoard.prototype.getHeight = function() {
-    return this.Rows * GameBoard.TileHeight;
+    return (this.Rows - 1) * GameBoard.TileHeight;
 }
 
 GameBoard.prototype.getRandomEnemyRow = function() {
@@ -160,7 +160,7 @@ Player.prototype.moveUp = function() {
 
 Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
-    if (this.y + GameBoard.TileHeight < gameBoard.getHeight()) {
+    if (this.y + GameBoard.TileHeight <= gameBoard.getHeight()) {
         this.y += GameBoard.TileHeight;
     }
 }
