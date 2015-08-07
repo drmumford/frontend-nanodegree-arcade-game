@@ -6,6 +6,10 @@
 function GameBoard(rows, columns) {
     this.Rows = rows;
     this.Columns = columns;
+
+    this.sounds = {
+        collision: new Audio("sounds/raygun.mp3")
+    }
 }
 
 // Pseudoclass properties.
@@ -156,7 +160,7 @@ Player.prototype.detectCollisions = function() {
         var enemy = allEnemies[i];
         if ((enemy.row == this.row) &&
             (this.leftX() < enemy.rightX() && this.rightX() > enemy.leftX())) {
-            console.log("Collision with Enemy " + enemy.id + "!");
+            gameBoard.sounds.collision.play();
             this.reset();
             break;
         }
