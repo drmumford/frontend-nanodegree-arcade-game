@@ -28,7 +28,7 @@ var Engine = (function(global) {
     var topBuffer = 50;
     var bottomBuffer = 141;
     canvas.width = 5 * 101;
-    canvas.height = topBuffer + 5 * 83 + bottomBuffer;
+    canvas.height = topBuffer + 6 * 83 + bottomBuffer;
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -114,9 +114,10 @@ var Engine = (function(global) {
                 'images/stone-block.png',   // Row 1 of 3 of stone
                 'images/stone-block.png',   // Row 2 of 3 of stone
                 'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png'    // Bottom row is grass
+                'images/grass-block.png',   // Row 1 of 2 of grass
+                'images/grass-block.png',   // Row 2 of 2 of grass
             ],
-            numRows = 5,
+            numRows = 6,
             numCols = 5,
             row, col;
 

@@ -28,12 +28,11 @@ GameBoard.prototype.getHeight = function() {
 
 GameBoard.prototype.getRandomEnemyRow = function() {
     // A random rock tile row. Enemies don't use the first
-    // row (water) or last row (grass); hence the minus two.
-    return GameBoard.Random(1, this.Rows - 2);
+    // row (water) or last two rows (grass); hence the minus three.
+    return GameBoard.Random(1, this.Rows - 3);
 }
 
-GameBoard.prototype.getGrassRow = function() {
-    // The grass row is always the last (bottom) row.
+GameBoard.prototype.getBottomRow = function() {
     return this.Rows - 1;
 }
 
@@ -134,7 +133,7 @@ Player.OffsetX = 30; // to detect collisions; 1/2 the visible portion of player.
 Player.OffsetY = -8; // to vertically center the player in their row.
 
 Player.prototype.init = function() {
-    this.row = gameBoard.getGrassRow();
+    this.row = gameBoard.getBottomRow();
     this.x = gameBoard.getWidth() / 2;
     this.y = gameBoard.getHeight() + Player.OffsetY;
 }
@@ -213,7 +212,7 @@ Player.prototype.moveUp = function() {
 
 Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
-    if (this.y + GameBoard.TileHeight <= gameBoard.getHeight()) {
+    if (this.row < gameBoard.getBottomRow()) {
         this.row++;
         this.y += GameBoard.TileHeight;
     }
@@ -225,7 +224,7 @@ Player.prototype.render = function() {
 }
 
 // Instantiate our Game Board object.
-var gameBoard = new GameBoard(5, 5);
+var gameBoard = new GameBoard(6, 5);
 
 // Instantiate enemy objects.
 var allEnemies = [];
