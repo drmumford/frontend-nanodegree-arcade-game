@@ -8,9 +8,9 @@ function GameBoard(rows, columns) {
     this.Columns = columns;
 
     this.sounds = {
-        collision: new Audio("sounds/raygun.mp3")
+        collision: "sounds/raygun.mp3"
     }
-}
+};
 
 // Pseudoclass properties.
 GameBoard.TileWidth = 101;
@@ -34,6 +34,11 @@ GameBoard.prototype.getRandomEnemyRow = function() {
 
 GameBoard.prototype.getBottomRow = function() {
     return this.Rows - 1;
+}
+
+GameBoard.prototype.playSound = function(soundFile) {
+    var sound = new Audio(soundFile);
+    sound.play();
 }
 
 // Generate a random number x, where lowLimit <= x <= highLimit.
@@ -159,7 +164,7 @@ Player.prototype.detectCollisions = function() {
         var enemy = allEnemies[i];
         if ((enemy.row == this.row) &&
             (this.leftX() < enemy.rightX() && this.rightX() > enemy.leftX())) {
-            gameBoard.sounds.collision.play();
+            gameBoard.playSound(gameBoard.sounds.collision);
             this.reset();
             break;
         }
