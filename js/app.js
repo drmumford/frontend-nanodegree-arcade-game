@@ -7,6 +7,9 @@ function GameBoard(rows, columns) {
     this.Rows = rows;
     this.Columns = columns;
 
+    this.counter = 0;
+    this.seconds = 0;
+
     this.sounds = {
         collision: "sounds/raygun.mp3"
     }
@@ -16,8 +19,22 @@ function GameBoard(rows, columns) {
 GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.WaterRow = 0; // always.
+GameBoard.FPS = 60; // frames per second.
 
 // Pseudoclass methods.
+GameBoard.prototype.update = function() {
+    this.counter++;
+    if (this.counter == GameBoard.FPS) {
+        this.seconds++;
+        this.counter = 0;
+        console.log("Game seconds: " + this.getSeconds() + " ...");
+    }
+}
+
+GameBoard.prototype.getSeconds = function() {
+    return this.seconds;
+}
+
 GameBoard.prototype.getWidth = function() {
     return (this.Columns - 1) * GameBoard.TileWidth;
 }
