@@ -66,6 +66,8 @@ GameBoard.Random = function(lowLimit, highLimit) {
 //---------------------------------
 // RenderableItem Pseudoclass.
 //---------------------------------
+
+// Constructor.
 function RenderableItem(id, x, y, sprite) {
     this.id = id;
     this.x = x;
@@ -73,9 +75,34 @@ function RenderableItem(id, x, y, sprite) {
     this.sprite = sprite;
 }
 
-// Default method to render the item on the screen.
+// Pseudoclass methods.
+// Default method to render the item on the canvas.
 RenderableItem.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+
+//---------------------------------
+// InteractiveItem Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function InteractiveItem(id, width, visibleWidth, x, y, sprite) {
+    RenderableItem.call(this, id, x, y, sprite);
+
+    this.width = width; // total, including non-visible portion.
+    this.halfVisibleWidth = visibleWidth / 2;
+}
+
+InteractiveItem.prototype = Object.create(RenderableItem.prototype);
+InteractiveItem.prototype.constructor = InteractiveItem;
+
+// Pseudoclass methods.
+InteractiveItem.prototype.leftX = function() {
+    return this.x + (this.width / 2) - this.halfVisibleWidth;
+}
+
+InteractiveItem.prototype.rightX = function() {
+    return this.x + (this.width / 2) + this.halfVisibleWidth;
 }
 
 //---------------------------------
@@ -84,11 +111,11 @@ RenderableItem.prototype.render = function() {
 
 // Constructor.
 function Enemy(id) {
-    RenderableItem.call(this, id, 0, 0, 'images/enemy-bug.png');
+    InteractiveItem.call(this, id, 101, 101, 0, 0, 'images/enemy-bug.png');
     this.setProperties();
 }
 
-Enemy.prototype = Object.create(RenderableItem.prototype);
+Enemy.prototype = Object.create(InteractiveItem.prototype);
 Enemy.prototype.constructor = Enemy;
 
 // Pseudoclass properties.
@@ -98,18 +125,7 @@ Enemy.MaxDelay = 100; // before starting a(nother) crossing of the game board.
 Enemy.MinSpeed = 75;
 Enemy.MaxSpeed = 300;
 
-Enemy.Width = 101; // total, including non-visible portion.
-Enemy.OffsetX = 50.5; // to detect collisions; 1/2 the visible portion of enemy.
 Enemy.OffsetY = -18; // to vertically center an enemy in their row.
-
-// Pseudoclass methods.
-Enemy.prototype.leftX = function() {
-    return this.x + (Enemy.Width / 2) - Enemy.OffsetX;
-}
-
-Enemy.prototype.rightX = function() {
-    return this.x + (Enemy.Width / 2) + Enemy.OffsetX;
-}
 
 // Pseudoclass methods.
 Enemy.prototype.setProperties = function() {
@@ -152,32 +168,21 @@ Enemy.prototype.update = function(dt) {
 
 // Constructor.
 function Player(id) {
-    RenderableItem.call(this, id, 0, 0, 'images/char-boy.png');
+    InteractiveItem.call(this, id, 101, 60, 0, 0, 'images/char-boy.png');
     this.init();
 }
 
-Player.prototype = Object.create(RenderableItem.prototype);
+Player.prototype = Object.create(InteractiveItem.prototype);
 Player.prototype.constructor = Player;
 
 // Pseudoclass properties.
-Player.Width = 101; // total, including non-visible portion.
-Player.OffsetX = 30; // to detect collisions; 1/2 the visible portion of player.
 Player.OffsetY = -8; // to vertically center the player in their row.
-
 
 // Pseudoclass methods.
 Player.prototype.init = function() {
     this.row = gameBoard.getBottomRow();
     this.x = gameBoard.getWidth() / 2;
     this.y = gameBoard.getHeight() + Player.OffsetY;
-}
-
-Player.prototype.leftX = function() {
-    return this.x + (Player.Width / 2) - Player.OffsetX;
-}
-
-Player.prototype.rightX = function() {
-    return this.x + (Player.Width / 2) + Player.OffsetX;
 }
 
 // Update the player's position; basically detect collisions
