@@ -64,17 +64,32 @@ GameBoard.Random = function(lowLimit, highLimit) {
 }
 
 //---------------------------------
+// RenderableItem Pseudoclass.
+//---------------------------------
+function RenderableItem(id, x, y, sprite) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.sprite = sprite;
+}
+
+// Default method to render the item on the screen.
+RenderableItem.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+
+//---------------------------------
 // Enemy Pseudoclass.
 //---------------------------------
 
 // Constructor.
-function Enemy(gameBoard, id) {
-    this.gameBoard = gameBoard;
-    this.id = id;
-
-    // Set initial properties.
+function Enemy(id) {
+    RenderableItem.call(this, id, 0, 0, 'images/enemy-bug.png');
     this.setProperties();
 }
+
+Enemy.prototype = Object.create(RenderableItem.prototype);
+Enemy.prototype.constructor = Enemy;
 
 // Pseudoclass properties.
 Enemy.MinDelay = 0;   // Delay is the time in game ticks that an enemy waits
@@ -87,6 +102,7 @@ Enemy.Width = 101; // total, including non-visible portion.
 Enemy.OffsetX = 50.5; // to detect collisions; 1/2 the visible portion of enemy.
 Enemy.OffsetY = -18; // to vertically center an enemy in their row.
 
+// Pseudoclass methods.
 Enemy.prototype.leftX = function() {
     return this.x + (Enemy.Width / 2) - Enemy.OffsetX;
 }
@@ -106,7 +122,6 @@ Enemy.prototype.setProperties = function() {
 
     this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
     this.color = "red";
-    this.sprite = 'images/enemy-bug.png';
 
     console.log("Bug " + this.id + ": " +
         "Row " + this.row + ", " +
@@ -131,29 +146,26 @@ Enemy.prototype.update = function(dt) {
     }
 }
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
-
 //---------------------------------
 // Player Pseudoclass.
 //---------------------------------
 
 // Constructor.
-function Player(gameBoard) {
-    this.gameBoard = gameBoard;
+function Player(id) {
+    RenderableItem.call(this, id, 0, 0, 'images/char-boy.png');
     this.init();
-
-    // The image/sprite for our player.
-    this.sprite = 'images/char-boy.png';
 }
+
+Player.prototype = Object.create(RenderableItem.prototype);
+Player.prototype.constructor = Player;
 
 // Pseudoclass properties.
 Player.Width = 101; // total, including non-visible portion.
 Player.OffsetX = 30; // to detect collisions; 1/2 the visible portion of player.
 Player.OffsetY = -8; // to vertically center the player in their row.
 
+
+// Pseudoclass methods.
 Player.prototype.init = function() {
     this.row = gameBoard.getBottomRow();
     this.x = gameBoard.getWidth() / 2;
@@ -240,24 +252,19 @@ Player.prototype.moveDown = function() {
     }
 }
 
-// Draw the player on the screen, required method for game
-Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
-
 // Instantiate our Game Board object.
 var gameBoard = new GameBoard(6, 5);
 
 // Instantiate enemy objects.
 var allEnemies = [];
-allEnemies.push(new Enemy(gameBoard, 1));
-allEnemies.push(new Enemy(gameBoard, 2));
-allEnemies.push(new Enemy(gameBoard, 3));
-allEnemies.push(new Enemy(gameBoard, 4));
-allEnemies.push(new Enemy(gameBoard, 5));
+allEnemies.push(new Enemy(1));
+allEnemies.push(new Enemy(2));
+allEnemies.push(new Enemy(3));
+allEnemies.push(new Enemy(4));
+allEnemies.push(new Enemy(5));
 
 // Instantiate our single player.
-var player = new Player(gameBoard);
+var player = new Player(0);
 
 // Handle 'keyup' events for allowed keys.
 document.addEventListener('keyup', function(e) {
