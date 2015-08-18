@@ -127,7 +127,7 @@ function Enemy(id) {
     var startingYPosition = 0; // dynamically determined.
     InteractiveItem.call(this, id, 101, 101, startingXPosition, startingYPosition, 'images/enemy-bug.png');
 
-    this.setProperties();
+    this.init();
 }
 
 Enemy.prototype = Object.create(InteractiveItem.prototype);
@@ -143,7 +143,7 @@ Enemy.MaxSpeed = 300;
 Enemy.OffsetY = -18; // to vertically center an enemy in their row.
 
 // Pseudoclass methods.
-Enemy.prototype.setProperties = function() {
+Enemy.prototype.init = function() {
     this.row = gameBoard.getRandomEnemyRow();
     this.x = this.startingXPosition;
     this.y = (this.row * GameBoard.TileHeight) + Enemy.OffsetY;
@@ -171,7 +171,7 @@ Enemy.prototype.update = function(dt) {
     } else {
         this.x += (this.speed * dt);
         if (this.x > ctx.canvas.width) {
-            this.setProperties(); // for next run.
+            this.init(); // for next run.
         }
     }
 }
