@@ -4,8 +4,8 @@
 
 // Constructor.
 function GameBoard(rows, columns) {
-    this.Rows = rows;
-    this.Columns = columns;
+    this.rows = rows;
+    this.columns = columns;
 
     this.counter = 0;
     this.seconds = 0;
@@ -36,21 +36,21 @@ GameBoard.prototype.getSeconds = function() {
 }
 
 GameBoard.prototype.getWidth = function() {
-    return (this.Columns - 1) * GameBoard.TileWidth;
+    return (this.columns - 1) * GameBoard.TileWidth;
 }
 
 GameBoard.prototype.getHeight = function() {
-    return (this.Rows - 1) * GameBoard.TileHeight;
+    return (this.rows - 1) * GameBoard.TileHeight;
 }
 
 GameBoard.prototype.getRandomEnemyRow = function() {
     // A random rock tile row. Enemies don't use the first
     // row (water) or last two rows (grass); hence the minus three.
-    return GameBoard.Random(1, this.Rows - 3);
+    return GameBoard.Random(1, this.rows - 3);
 }
 
 GameBoard.prototype.getBottomRow = function() {
-    return this.Rows - 1;
+    return this.rows - 1;
 }
 
 GameBoard.prototype.playSound = function(soundFile) {
