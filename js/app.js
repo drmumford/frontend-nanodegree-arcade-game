@@ -105,6 +105,15 @@ InteractiveItem.prototype.rightX = function() {
     return this.x + (this.width / 2) + this.halfVisibleWidth;
 }
 
+InteractiveItem.prototype.overlapsWith = function(other) {
+    return (
+        (other instanceof InteractiveItem) &&
+        (this.row == other.row) &&
+        (this.leftX() < other.rightX()) &&
+        (this.rightX() > other.leftX())
+    );
+}
+
 //---------------------------------
 // Enemy Pseudoclass.
 //---------------------------------
@@ -188,16 +197,14 @@ Player.prototype.init = function() {
 // Update the player's position; basically detect collisions
 // and reset the player position, if necessary.
 Player.prototype.update = function() {
-    this.detectCollisions();
+    this.detectEnemyCollisions();
 }
 
-Player.prototype.detectCollisions = function() {
-    // Iterate through each enemy and detect if any overlap
-    // with the current player position.
+// Iterate through each enemy and detect if any overlap
+// with the current player position.
+Player.prototype.detectEnemyCollisions = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
-        var enemy = allEnemies[i];
-        if ((enemy.row == this.row) &&
-            (this.leftX() < enemy.rightX() && this.rightX() > enemy.leftX())) {
+        if (this.overlapsWith(allEnemies[i])) {
             gameBoard.playSound(gameBoard.sounds.collision);
             this.reset();
             break;
