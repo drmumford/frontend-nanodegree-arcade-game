@@ -86,8 +86,11 @@ RenderableItem.prototype.render = function() {
 //---------------------------------
 
 // Constructor.
-function InteractiveItem(id, width, visibleWidth, x, y, sprite) {
-    RenderableItem.call(this, id, x, y, sprite);
+function InteractiveItem(id, width, visibleWidth, startingXPosition, startingYPosition, sprite) {
+    RenderableItem.call(this, id, startingXPosition, startingYPosition, sprite);
+
+    this.startingXPosition = startingXPosition;
+    this.startingYPosition = startingYPosition;
 
     this.width = width; // total, including non-visible portion.
     this.halfVisibleWidth = visibleWidth / 2;
@@ -120,7 +123,10 @@ InteractiveItem.prototype.overlapsWith = function(other) {
 
 // Constructor.
 function Enemy(id) {
-    InteractiveItem.call(this, id, 101, 101, 0, 0, 'images/enemy-bug.png');
+    var startingXPosition = -GameBoard.TileWidth; // off-canvas.
+    var startingYPosition = 0; // dynamically determined.
+    InteractiveItem.call(this, id, 101, 101, startingXPosition, startingYPosition, 'images/enemy-bug.png');
+
     this.setProperties();
 }
 
@@ -139,8 +145,7 @@ Enemy.OffsetY = -18; // to vertically center an enemy in their row.
 // Pseudoclass methods.
 Enemy.prototype.setProperties = function() {
     this.row = gameBoard.getRandomEnemyRow();
-
-    this.x = -GameBoard.TileWidth; // off canvas.
+    this.x = this.startingXPosition;
     this.y = (this.row * GameBoard.TileHeight) + Enemy.OffsetY;
 
     this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
@@ -177,7 +182,10 @@ Enemy.prototype.update = function(dt) {
 
 // Constructor.
 function Player(id) {
-    InteractiveItem.call(this, id, 101, 60, 0, 0, 'images/char-boy.png');
+    var startingXPosition = gameBoard.getWidth() / 2;
+    var startingYPosition = gameBoard.getHeight() + Player.OffsetY;
+    InteractiveItem.call(this, id, 101, 60, startingXPosition, startingYPosition, 'images/char-boy.png');
+
     this.init();
 }
 
@@ -190,8 +198,8 @@ Player.OffsetY = -8; // to vertically center the player in their row.
 // Pseudoclass methods.
 Player.prototype.init = function() {
     this.row = gameBoard.getBottomRow();
-    this.x = gameBoard.getWidth() / 2;
-    this.y = gameBoard.getHeight() + Player.OffsetY;
+    this.x = this.startingXPosition;
+    this.y = this.startingYPosition;
 }
 
 // Update the player's position; basically detect collisions
