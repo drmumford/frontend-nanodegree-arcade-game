@@ -334,10 +334,13 @@ Charm.prototype.drop = function() {
     this.y = enemy.y;
     this.row = gameBoard.getRowFromY(enemy.y, Enemy.OffsetY);
     this.sprite = enemy.getCharmSprite();
+
+    gameBoard.playSound(gameBoard.sounds.charmdrop);
     this.visible = true;
 }
 
 Charm.prototype.pickup = function() {
+    gameBoard.playSound(gameBoard.sounds.charmpickup);
     this.visible = false;
 }
 
@@ -376,9 +379,9 @@ CharmsManager.prototype.update = function() {
     this.seconds = gameBoard.getSeconds() - this.startingSeconds;
     if (this.seconds >= this.delay) {
         for (var i = 0; i < this.charms.length; ++i) {
-            if (!this.charms[i].visible) {
-                this.charms[i].drop();
-                gameBoard.playSound(gameBoard.sounds.charmdrop);
+            var charm = this.charms[i];
+            if (!charm.visible) {
+                charms.drop();
                 this.resetCharmTimer();
                 break;
             }
