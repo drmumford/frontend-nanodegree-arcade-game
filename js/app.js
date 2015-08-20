@@ -11,7 +11,9 @@ function GameBoard(rows, columns) {
     this.seconds = 0;
 
     this.sounds = {
-        collision: "sounds/raygun.mp3"
+        collision: "sounds/raygun.mp3",
+        charmdrop: "sounds/raygun.wav",
+        charmpickup: "sounds/raygun.mp3"
     }
 };
 
@@ -53,6 +55,14 @@ GameBoard.prototype.getBottomRow = function() {
     return this.rows - 1;
 }
 
+GameBoard.prototype.getRowFromY = function(y, offset) {
+    return (y - offset) / GameBoard.TileHeight;
+}
+
+GameBoard.prototype.getYFromRow = function(row, offset) {
+    return (row * GameBoard.TileHeight) + offset;
+}
+
 GameBoard.prototype.playSound = function(soundFile) {
     var sound = new Audio(soundFile);
     sound.play();
@@ -89,6 +99,7 @@ RenderableItem.prototype.render = function() {
 function InteractiveItem(id, width, visibleWidth, startingXPosition, startingYPosition, sprite) {
     RenderableItem.call(this, id, startingXPosition, startingYPosition, sprite);
 
+    this.row = 0; // proxy for Y coordinate; makes interaction easier to detect.
     this.startingXPosition = startingXPosition;
     this.startingYPosition = startingYPosition;
 
@@ -123,9 +134,11 @@ InteractiveItem.prototype.overlapsWith = function(other) {
 
 // Constructor.
 function Enemy(id) {
+    var width = 101;
+    var visibleWidth = 101;
     var startingXPosition = -GameBoard.TileWidth; // off-canvas.
     var startingYPosition = 0; // dynamically determined.
-    InteractiveItem.call(this, id, 101, 101, startingXPosition, startingYPosition, 'images/enemy-bug.png');
+    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-bug.png');
 
     this.init();
 }
@@ -146,7 +159,7 @@ Enemy.OffsetY = -18; // to vertically center an enemy in their row.
 Enemy.prototype.init = function() {
     this.row = gameBoard.getRandomEnemyRow();
     this.x = this.startingXPosition;
-    this.y = (this.row * GameBoard.TileHeight) + Enemy.OffsetY;
+    this.y = gameBoard.getYFromRow(this.row, Enemy.OffsetY);
 
     this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
 
@@ -158,7 +171,8 @@ Enemy.prototype.init = function() {
         "Color = " + this.color + ", " +
         "Delay = " + this.delay + ", " +
         "Speed = " + this.speed + ", " +
-        "X = " + this.x
+        "x = " + this.x + ", " +
+        "y = " + this.y
         );
 }
 
@@ -182,9 +196,11 @@ Enemy.prototype.update = function(dt) {
 
 // Constructor.
 function Player(id) {
+    var width = 101;
+    var visibleWidth = 60;
     var startingXPosition = gameBoard.getWidth() / 2;
     var startingYPosition = gameBoard.getHeight() + Player.OffsetY;
-    InteractiveItem.call(this, id, 101, 60, startingXPosition, startingYPosition, 'images/char-boy.png');
+    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/char-boy.png');
 
     this.init();
 }
@@ -206,15 +222,25 @@ Player.prototype.init = function() {
 // and reset the player position, if necessary.
 Player.prototype.update = function() {
     this.detectEnemyCollisions();
+    this.detectCharmPickups();
 }
 
-// Iterate through each enemy and detect if any overlap
-// with the current player position.
+// Determine if the player is touching any enemy.
 Player.prototype.detectEnemyCollisions = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
         if (this.overlapsWith(allEnemies[i])) {
             gameBoard.playSound(gameBoard.sounds.collision);
             this.reset();
+            break;
+        }
+    }
+}
+
+// Determine if the player is touching any charm.
+Player.prototype.detectCharmPickups = function() {
+    for (var i = 0; i < charmsManager.charms.length; ++i) {
+        if (this.overlapsWith(charmsManager.charms[i])) {
+            // Pickup charm, add points, etc. ...
             break;
         }
     }
@@ -272,19 +298,108 @@ Player.prototype.moveDown = function() {
     }
 }
 
+//---------------------------------
+// Charms Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function Charm(id, x, y, sprite) {
+
+    var width = 101;
+    var visibleWidth = 101;
+    var startingXPosition = x; // starting position is only position.
+    var startingYPosition = y; // starting position is only position.
+
+    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, sprite);
+
+    this.row = gameBoard.getRowFromY(y, Enemy.OffsetY);
+    this.visible = false;
+}
+
+Charm.prototype = Object.create(InteractiveItem.prototype);
+Charm.prototype.constructor = Charm;
+
+//---------------------------------
+// CharmsManager Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function CharmsManager() {
+    this.charms = [];
+    this.seconds = 0;
+
+    this.init();
+}
+
+// Pseudoclass properties.
+CharmsManager.MinDelay = 2; // Delay in seconds the charms manager waits before triggering
+CharmsManager.MaxDelay = 4; // a(nother) charm when the number of charms < the allowed charms.
+
+CharmsManager.AllowedCharms = 2; // maximum number of charms allowed on the game board.
+
+// Pseudoclass methods.
+CharmsManager.prototype.init = function() {
+    this.startingSeconds = gameBoard.getSeconds();
+    this.delay = GameBoard.Random(CharmsManager.MinDelay, CharmsManager.MaxDelay);
+}
+
+CharmsManager.prototype.makeCharm = function() {
+    // Create a charm using the coordinates of a random enemy.
+    var enemy = allEnemies[GameBoard.Random(0, allEnemies.length - 1)];
+    return new Charm(0, enemy.x, enemy.y, this.getCharmSpriteForEnemy(enemy))
+}
+
+CharmsManager.prototype.getCharmSpriteForEnemy = function(enemy) {
+    switch (enemy.color) {
+        case "red":
+        default:
+            return 'images/charm-red.png'; // currently, just red.
+    }
+}
+
+CharmsManager.prototype.render = function() {
+    this.charms.forEach(function(charm) {
+        charm.render();
+    });
+}
+
+CharmsManager.prototype.update = function() {
+    this.seconds = gameBoard.getSeconds() - this.startingSeconds;
+    if ((this.charms.length < CharmsManager.AllowedCharms) &&
+        (this.seconds >= this.delay)) {
+        var charm = this.makeCharm();
+        if (charm != null) {
+            gameBoard.playSound(gameBoard.sounds.charmdrop);
+            this.charms.push(charm);
+            this.init();
+        }
+    }
+}
+
+//---------------------------------
+// Global game objects.
+//---------------------------------
+
 // Instantiate our Game Board object.
 var gameBoard = new GameBoard(6, 5);
 
 // Instantiate enemy objects.
 var allEnemies = [];
+allEnemies.push(new Enemy(0));
 allEnemies.push(new Enemy(1));
 allEnemies.push(new Enemy(2));
 allEnemies.push(new Enemy(3));
 allEnemies.push(new Enemy(4));
-allEnemies.push(new Enemy(5));
 
-// Instantiate our single player.
-var player = new Player(0);
+// Instantiate player objects.
+var player = new Player(0); // just one currently.
+
+// Instantiate charm manager.
+var charmsManager = new CharmsManager();
+
+//---------------------------------
+// Event handlers.
+//---------------------------------
 
 // Handle 'keyup' events for allowed keys.
 document.addEventListener('keyup', function(e) {
