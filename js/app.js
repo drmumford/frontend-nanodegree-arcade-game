@@ -323,24 +323,38 @@ Charm.prototype.constructor = Charm;
 // Pseudoclass properties.
 Charm.Width = 101;
 Charm.VisibleWidth = 101;
+Charm.OffsetY = 15;
 
 // Pseudoclass methods.
 Charm.prototype.drop = function() {
-    // Charms are dropped underneath a random enemy; select the lucky bugger.
-    var enemy = allEnemies[GameBoard.Random(0, allEnemies.length - 1)];
 
-    // Use the enemies properties for the charm.
-    this.x = enemy.x;
-    this.y = enemy.y;
-    this.row = gameBoard.getRowFromY(enemy.y, Enemy.OffsetY);
-    this.sprite = enemy.getCharmSprite();
+    // Charms are dropped beneath an enemy; find one in an acceptable position.
+    for (var i = 0; i < allEnemies.length; ++i) {
+        var enemy = allEnemies[i];
 
-    gameBoard.playSound(gameBoard.sounds.charmdrop);
-    this.visible = true;
+        // Must be in the visible portion of the game board.
+        if (enemy.x >= 0 && enemy.x <= gameBoard.getWidth() /* && centeredInColumn */) {
+
+            // (Re)Init the charm using the enemy's properties.
+            this.x = enemy.x;
+            this.y = enemy.y + Charm.OffsetY;
+            this.row = gameBoard.getRowFromY(enemy.y, Enemy.OffsetY);
+            this.sprite = enemy.getCharmSprite();
+            this.visible = true;
+
+            gameBoard.playSound(gameBoard.sounds.charmdrop);
+            charmsManager.resetCharmTimer();
+
+            return true;
+        }
+    }
+
+    return false; // no enemy is in a position to drop.
 }
 
 Charm.prototype.pickup = function() {
     gameBoard.playSound(gameBoard.sounds.charmpickup);
+    charmsManager.resetCharmTimer(); // wait before dropping the next charm.
     this.visible = false;
 }
 
@@ -355,8 +369,8 @@ function CharmsManager() {
 }
 
 // Pseudoclass properties.
-CharmsManager.MinDelay = 2; // Delay in seconds the charms manager waits before triggering
-CharmsManager.MaxDelay = 4; // a(nother) charm when the number of charms < the allowed charms.
+CharmsManager.MinDelay = 2; // Variable delay in seconds to wait
+CharmsManager.MaxDelay = 4; // before dropping a(nother) charm.
 
 // Pseudoclass methods.
 CharmsManager.prototype.resetCharmTimer = function() {
@@ -380,9 +394,7 @@ CharmsManager.prototype.update = function() {
     if (this.seconds >= this.delay) {
         for (var i = 0; i < this.charms.length; ++i) {
             var charm = this.charms[i];
-            if (!charm.visible) {
-                charms.drop();
-                this.resetCharmTimer();
+            if (!charm.visible && charm.drop()) {
                 break;
             }
         }
