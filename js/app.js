@@ -12,7 +12,7 @@ function GameBoard(rows, columns) {
 
     this.sounds = {
         collision: "sounds/raygun.mp3",
-        charmdrop: "sounds/raygun.wav",
+        charmdrop: "sounds/raygun.mp3",
         charmpickup: "sounds/raygun.mp3"
     }
 };
@@ -176,6 +176,14 @@ Enemy.prototype.init = function() {
         );
 }
 
+Enemy.prototype.getCharmSprite = function() {
+    switch (this.color) {
+        case "red":
+        default:
+            return 'images/charm-red.png'; // currently, just red.
+    }
+}
+
 // Update the enemy's position, required method for game.
 // Parameter: dt, a time delta between ticks. We multiply movement by the
 // dt parameter which ensures the game runs at the same speed for all computers.
@@ -239,9 +247,10 @@ Player.prototype.detectEnemyCollisions = function() {
 // Determine if the player is touching any charm.
 Player.prototype.detectCharmPickups = function() {
     for (var i = 0; i < charmsManager.charms.length; ++i) {
-        if (this.overlapsWith(charmsManager.charms[i])) {
-            // Pickup charm, add points, etc. ...
-            break;
+        var charm = charmsManager.charms[i];
+        if (charm.visible && this.overlapsWith(charm)) {
+            charm.pickup();
+            // Add points, etc. ...
         }
     }
 }
@@ -303,21 +312,34 @@ Player.prototype.moveDown = function() {
 //---------------------------------
 
 // Constructor.
-function Charm(id, x, y, sprite) {
-
-    var width = 101;
-    var visibleWidth = 101;
-    var startingXPosition = x; // starting position is only position.
-    var startingYPosition = y; // starting position is only position.
-
-    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, sprite);
-
-    this.row = gameBoard.getRowFromY(y, Enemy.OffsetY);
+function Charm(id) {
+    InteractiveItem.call(this, id, Charm.Width, Charm.VisibleWidth, 0, 0, null);
     this.visible = false;
 }
 
 Charm.prototype = Object.create(InteractiveItem.prototype);
 Charm.prototype.constructor = Charm;
+
+// Pseudoclass properties.
+Charm.Width = 101;
+Charm.VisibleWidth = 101;
+
+// Pseudoclass methods.
+Charm.prototype.drop = function() {
+    // Charms are dropped underneath a random enemy; select the lucky bugger.
+    var enemy = allEnemies[GameBoard.Random(0, allEnemies.length - 1)];
+
+    // Use the enemies properties for the charm.
+    this.x = enemy.x;
+    this.y = enemy.y;
+    this.row = gameBoard.getRowFromY(enemy.y, Enemy.OffsetY);
+    this.sprite = enemy.getCharmSprite();
+    this.visible = true;
+}
+
+Charm.prototype.pickup = function() {
+    this.visible = false;
+}
 
 //---------------------------------
 // CharmsManager Pseudoclass.
@@ -325,53 +347,41 @@ Charm.prototype.constructor = Charm;
 
 // Constructor.
 function CharmsManager() {
-    this.charms = [];
-    this.seconds = 0;
-
-    this.init();
+    this.charms = [new Charm(0), new Charm(1)];
+    this.resetCharmTimer();
 }
 
 // Pseudoclass properties.
 CharmsManager.MinDelay = 2; // Delay in seconds the charms manager waits before triggering
 CharmsManager.MaxDelay = 4; // a(nother) charm when the number of charms < the allowed charms.
 
-CharmsManager.AllowedCharms = 2; // maximum number of charms allowed on the game board.
-
 // Pseudoclass methods.
-CharmsManager.prototype.init = function() {
+CharmsManager.prototype.resetCharmTimer = function() {
+    this.seconds = 0;
     this.startingSeconds = gameBoard.getSeconds();
+
+    // A variable delay determines when the next charm is actually dropped.
     this.delay = GameBoard.Random(CharmsManager.MinDelay, CharmsManager.MaxDelay);
-}
-
-CharmsManager.prototype.makeCharm = function() {
-    // Create a charm using the coordinates of a random enemy.
-    var enemy = allEnemies[GameBoard.Random(0, allEnemies.length - 1)];
-    return new Charm(0, enemy.x, enemy.y, this.getCharmSpriteForEnemy(enemy))
-}
-
-CharmsManager.prototype.getCharmSpriteForEnemy = function(enemy) {
-    switch (enemy.color) {
-        case "red":
-        default:
-            return 'images/charm-red.png'; // currently, just red.
-    }
 }
 
 CharmsManager.prototype.render = function() {
     this.charms.forEach(function(charm) {
-        charm.render();
+        if (charm.visible) {
+            charm.render();
+        }
     });
 }
 
 CharmsManager.prototype.update = function() {
     this.seconds = gameBoard.getSeconds() - this.startingSeconds;
-    if ((this.charms.length < CharmsManager.AllowedCharms) &&
-        (this.seconds >= this.delay)) {
-        var charm = this.makeCharm();
-        if (charm != null) {
-            gameBoard.playSound(gameBoard.sounds.charmdrop);
-            this.charms.push(charm);
-            this.init();
+    if (this.seconds >= this.delay) {
+        for (var i = 0; i < this.charms.length; ++i) {
+            if (!this.charms[i].visible) {
+                this.charms[i].drop();
+                gameBoard.playSound(gameBoard.sounds.charmdrop);
+                this.resetCharmTimer();
+                break;
+            }
         }
     }
 }
