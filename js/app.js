@@ -485,7 +485,7 @@ Charm.prototype.pickup = function() {
 
 // Constructor.
 function CharmsManager() {
-    this.charms = [new Charm(0, 10), new Charm(1, 20)];
+    this.charms = [new Charm(0, 10), new Charm(1, 20), new Charm(2, 30)];
     this.resetCharmTimer();
 }
 
