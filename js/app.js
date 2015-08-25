@@ -43,7 +43,6 @@ ScoreBoard.prototype.update = function() {
 }
 
 ScoreBoard.prototype.render = function(score) {
-
     // Overwrite existing scoreboard.
     ctx.fillStyle = "#ffd800";
     ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, 48);
@@ -93,6 +92,7 @@ GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0; // always.
 GameBoard.FPS = 60; // frames per second.
+GameBoard.PointsPerSecond = 100; // when the player is inplay.
 
 // Pseudoclass methods.
 GameBoard.prototype.update = function() {
@@ -123,7 +123,7 @@ GameBoard.prototype.getHeight = function() {
 GameBoard.prototype.getRandomEnemyRow = function() {
     // A random stone tile row. Note: enemies don't use
     // the last two rows (grass tiles).
-    return GameBoard.Random(0, this.rows - 3);
+    return GameBoard.Random(0, this.getBottomRow() - 2);
 }
 
 GameBoard.prototype.getBottomRow = function() {
@@ -336,6 +336,7 @@ Player.OffsetY = -8; // to vertically center the player in their row.
 
 // Pseudoclass methods.
 Player.prototype.init = function() {
+    this.lastSecond = gameBoard.getSeconds();
     this.row = gameBoard.getBottomRow();
     this.x = this.startingXPosition;
     this.y = this.startingYPosition;
@@ -348,8 +349,17 @@ Player.prototype.update = function() {
         return;
     }
 
+    // Order is important here; don't pick up charm(s)
+    // if the player has collided with an enemy.
     this.detectEnemyCollisions();
     this.detectCharmPickups();
+
+    var currentSeconds = gameBoard.getSeconds();
+    if (this.IsActive() &&
+        currentSeconds > this.lastSecond) {
+        scoreBoard.addPoints(GameBoard.PointsPerSecond);
+        this.lastSecond = currentSeconds;
+    }
 }
 
 // Determine if the player is touching any enemy.
@@ -394,7 +404,9 @@ Player.prototype.handleInput = function(key) {
             this.moveDown();
             break;
     }
-    console.log("Player in Row " + this.row + " (" + this.x + ", " + this.y + ")");
+
+    console.log("Player is " + (this.IsActive() ? "active" : "resting") +
+        ", Row " + this.row + " (" + this.x + ", " + this.y + ")");
 }
 
 Player.prototype.moveLeft = function() {
@@ -427,6 +439,10 @@ Player.prototype.moveDown = function() {
     }
 }
 
+Player.prototype.IsActive = function() {
+    return (this.row <= (gameBoard.getBottomRow() - 2));
+}
+
 //---------------------------------
 // Charms Pseudoclass.
 //---------------------------------
@@ -449,7 +465,6 @@ Charm.OffsetY = 93;
 
 // Pseudoclass methods.
 Charm.prototype.drop = function() {
-
     // Charms are dropped beneath an enemy; find one in an acceptable position.
     for (var i = 0; i < allEnemies.length; ++i) {
         var enemy = allEnemies[i];
@@ -505,7 +520,6 @@ CharmsManager.prototype.resetCharmTimer = function() {
 CharmsManager.prototype.render = function() {
     this.charms.forEach(function(charm) {
         if (charm.visible) {
-
             var width = Charm.Width * 0.25;
             var height = Charm.Height * 0.25;
 
@@ -570,4 +584,3 @@ document.addEventListener('keyup', function(e) {
 
     gameBoard.handleInput(allowedKeys[e.keyCode]);
 });
-
