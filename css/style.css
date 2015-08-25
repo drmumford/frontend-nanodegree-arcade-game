@@ -4,10 +4,12 @@ body {
 }
 
 .container {
+    background-color: #ffd800;
     width: 505px;
     margin: auto;
     color: red;
     font: 40px/80px Impact, Gadget, Fantasy;
+    border-radius: 7px;
 }
 
 header {

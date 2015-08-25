@@ -45,7 +45,7 @@ ScoreBoard.prototype.update = function() {
 ScoreBoard.prototype.render = function(score) {
 
     // Overwrite existing scoreboard.
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "#ffd800";
     ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, 48);
 
     // Render remaining lives icons.
@@ -91,7 +91,7 @@ function GameBoard(rows, columns) {
 // Pseudoclass properties.
 GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
-GameBoard.WaterRow = 0; // always.
+GameBoard.TopRow = 0; // always.
 GameBoard.FPS = 60; // frames per second.
 
 // Pseudoclass methods.
@@ -121,9 +121,9 @@ GameBoard.prototype.getHeight = function() {
 }
 
 GameBoard.prototype.getRandomEnemyRow = function() {
-    // A random rock tile row. Enemies don't use the first
-    // row (water) or last two rows (grass); hence the minus three.
-    return GameBoard.Random(1, this.rows - 3);
+    // A random stone tile row. Note: enemies don't use
+    // the last two rows (grass tiles).
+    return GameBoard.Random(0, this.rows - 3);
 }
 
 GameBoard.prototype.getBottomRow = function() {
@@ -413,7 +413,7 @@ Player.prototype.moveRight = function() {
 
 Player.prototype.moveUp = function() {
     // If we're not in the top row, then we can move up.
-    if (this.row > GameBoard.WaterRow) {
+    if (this.row > GameBoard.TopRow) {
         this.row--;
         this.y -= GameBoard.TileHeight;
     }
