@@ -82,9 +82,9 @@ function GameBoard(rows, columns) {
     this.paused = false;
 
     this.sounds = {
-        collision: "sounds/raygun.mp3",
-        charmdrop: "sounds/raygun.mp3",
-        charmpickup: "sounds/raygun.mp3"
+        collision: "sounds/hit.wav",
+        charmdrop: "sounds/thud.wav",
+        charmpickup: "sounds/pop.wav"
     }
 };
 
