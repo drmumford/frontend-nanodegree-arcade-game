@@ -1,4 +1,73 @@
 //---------------------------------
+// ScoreBoard Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function ScoreBoard() {
+    this.reset();
+};
+
+// Pseudoclass properties.
+ScoreBoard.LivesPerGame = 5;
+ScoreBoard.LivesPositionX = 5;
+ScoreBoard.LivesPositionY = -26;
+ScoreBoard.ScorePositionX = 500;
+ScoreBoard.ScorePositionY = 40;
+ScoreBoard.LivesSprite = 'images/char-boy.png';
+
+// Pseudoclass methods.
+ScoreBoard.prototype.reset = function() {
+    this.remainingLives = ScoreBoard.LivesPerGame;
+    this.score = 0;
+    this.points = 0;
+}
+
+ScoreBoard.prototype.addLife = function() {
+    this.remainingLives++;
+}
+
+ScoreBoard.prototype.removeLife = function() {
+    this.remainingLives--;
+}
+
+ScoreBoard.prototype.addPoints = function(points) {
+    this.points += points;
+}
+
+ScoreBoard.prototype.update = function() {
+    if (gameBoard.paused) {
+        return;
+    }
+
+    this.score += this.points;
+}
+
+ScoreBoard.prototype.render = function(score) {
+
+    // Overwrite existing scoreboard.
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, 48);
+
+    // Render remaining lives icons.
+    var image = Resources.get(ScoreBoard.LivesSprite);
+    var width = image.width * 0.5;
+    var height = image.height * 0.5;
+    for (i = 0; i < this.remainingLives; ++i) {
+        ctx.drawImage(image, ScoreBoard.LivesPositionX + i * width, ScoreBoard.LivesPositionY, width, height);
+    }
+
+    // Render the score.
+    ctx.font = "28pt Impact";
+    ctx.textAlign = "right";
+    ctx.fillStyle = "red";
+    if (score !== "") {
+        ctx.fillText("Score " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
+    }
+
+    this.points = 0;
+}
+
+//---------------------------------
 // Game Board Pseudoclass.
 //---------------------------------
 
@@ -9,6 +78,8 @@ function GameBoard(rows, columns) {
 
     this.counter = 0;
     this.seconds = 0;
+
+    this.paused = false;
 
     this.sounds = {
         collision: "sounds/raygun.mp3",
@@ -25,6 +96,10 @@ GameBoard.FPS = 60; // frames per second.
 
 // Pseudoclass methods.
 GameBoard.prototype.update = function() {
+    if (this.paused) {
+        return;
+    }
+
     this.counter++;
     if (this.counter == GameBoard.FPS) {
         this.seconds++;
@@ -73,6 +148,17 @@ GameBoard.Random = function(lowLimit, highLimit) {
     return lowLimit + Math.floor(Math.random() * (highLimit - lowLimit + 1));
 }
 
+GameBoard.prototype.handleInput = function(key) {
+    // Key inputs related to the player.
+    switch (key) {
+        case "pause":
+            this.paused = !this.paused;
+            break;
+        default:
+            player.handleInput(key);
+    }
+}
+
 //---------------------------------
 // RenderableItem Pseudoclass.
 //---------------------------------
@@ -86,9 +172,12 @@ function RenderableItem(id, x, y, sprite) {
 }
 
 // Pseudoclass methods.
-// Default method to render the item on the canvas.
-RenderableItem.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+RenderableItem.prototype.render = function(width, height) {
+    if (width == null && height == null) {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 101, 171);
+    } else {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y, width, height);
+    }
 }
 
 //---------------------------------
@@ -184,10 +273,36 @@ Enemy.prototype.getCharmSprite = function() {
     }
 }
 
+Enemy.prototype.centeredInTile = function() {
+    if (this.x <= 0) {
+        return false; // off-screen to the left.
+    }
+
+    if (this.x >= gameBoard.getWidth()) {
+        return false; // off-screen to the right.
+    }
+
+    var offset = 10;
+    var columnCenter = GameBoard.TileWidth / 2 - offset;
+    var toleranceFactor = GameBoard.TileWidth * 0.01; // 1%
+    var columnPosition = Math.floor(this.x % GameBoard.TileWidth);
+
+    if (columnPosition <= (columnCenter - toleranceFactor) ||
+        columnPosition >= (columnCenter + toleranceFactor)) {
+        return false; // off center.
+    }
+
+    return true; // enemy is centered in the column.
+}
+
 // Update the enemy's position, required method for game.
 // Parameter: dt, a time delta between ticks. We multiply movement by the
 // dt parameter which ensures the game runs at the same speed for all computers.
 Enemy.prototype.update = function(dt) {
+    if (gameBoard.paused) {
+        return;
+    }
+
     if (this.delay > 0) {
         this.delay--;
     } else {
@@ -229,6 +344,10 @@ Player.prototype.init = function() {
 // Update the player's position; basically detect collisions
 // and reset the player position, if necessary.
 Player.prototype.update = function() {
+    if (gameBoard.paused) {
+        return;
+    }
+
     this.detectEnemyCollisions();
     this.detectCharmPickups();
 }
@@ -237,6 +356,7 @@ Player.prototype.update = function() {
 Player.prototype.detectEnemyCollisions = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
         if (this.overlapsWith(allEnemies[i])) {
+            scoreBoard.removeLife();
             gameBoard.playSound(gameBoard.sounds.collision);
             this.reset();
             break;
@@ -250,7 +370,6 @@ Player.prototype.detectCharmPickups = function() {
         var charm = charmsManager.charms[i];
         if (charm.visible && this.overlapsWith(charm)) {
             charm.pickup();
-            // Add points, etc. ...
         }
     }
 }
@@ -260,6 +379,7 @@ Player.prototype.reset = function() {
 }
 
 Player.prototype.handleInput = function(key) {
+    // Key inputs related to the player.
     switch (key) {
         case "left":
             this.moveLeft();
@@ -312,8 +432,9 @@ Player.prototype.moveDown = function() {
 //---------------------------------
 
 // Constructor.
-function Charm(id) {
-    InteractiveItem.call(this, id, Charm.Width, Charm.VisibleWidth, 0, 0, null);
+function Charm(id, points) {
+    InteractiveItem.call(this, id, Charm.Width * 0.25, Charm.VisibleWidth, 0, 0, null);
+    this.points = points;
     this.visible = false;
 }
 
@@ -322,8 +443,9 @@ Charm.prototype.constructor = Charm;
 
 // Pseudoclass properties.
 Charm.Width = 101;
-Charm.VisibleWidth = 101;
-Charm.OffsetY = 15;
+Charm.Height = 171;
+Charm.VisibleWidth = 20;
+Charm.OffsetY = 93;
 
 // Pseudoclass methods.
 Charm.prototype.drop = function() {
@@ -332,9 +454,7 @@ Charm.prototype.drop = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
         var enemy = allEnemies[i];
 
-        // Must be in the visible portion of the game board.
-        if (enemy.x >= 0 && enemy.x <= gameBoard.getWidth() /* && centeredInColumn */) {
-
+        if (enemy.centeredInTile()) {
             // (Re)Init the charm using the enemy's properties.
             this.x = enemy.x;
             this.y = enemy.y + Charm.OffsetY;
@@ -354,6 +474,7 @@ Charm.prototype.drop = function() {
 
 Charm.prototype.pickup = function() {
     gameBoard.playSound(gameBoard.sounds.charmpickup);
+    scoreBoard.addPoints(this.points);
     charmsManager.resetCharmTimer(); // wait before dropping the next charm.
     this.visible = false;
 }
@@ -364,7 +485,7 @@ Charm.prototype.pickup = function() {
 
 // Constructor.
 function CharmsManager() {
-    this.charms = [new Charm(0), new Charm(1)];
+    this.charms = [new Charm(0, 10), new Charm(1, 20)];
     this.resetCharmTimer();
 }
 
@@ -384,12 +505,20 @@ CharmsManager.prototype.resetCharmTimer = function() {
 CharmsManager.prototype.render = function() {
     this.charms.forEach(function(charm) {
         if (charm.visible) {
-            charm.render();
+
+            var width = Charm.Width * 0.25;
+            var height = Charm.Height * 0.25;
+
+            charm.render(width, height);
         }
     });
 }
 
 CharmsManager.prototype.update = function() {
+    if (gameBoard.paused) {
+        return;
+    }
+
     this.seconds = gameBoard.getSeconds() - this.startingSeconds;
     if (this.seconds >= this.delay) {
         for (var i = 0; i < this.charms.length; ++i) {
@@ -404,6 +533,9 @@ CharmsManager.prototype.update = function() {
 //---------------------------------
 // Global game objects.
 //---------------------------------
+
+// Instantiate a scoreboard object.
+var scoreBoard = new ScoreBoard();
 
 // Instantiate our Game Board object.
 var gameBoard = new GameBoard(6, 5);
@@ -429,11 +561,13 @@ var charmsManager = new CharmsManager();
 // Handle 'keyup' events for allowed keys.
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
+        32: 'pause',
         37: 'left',
         38: 'up',
         39: 'right',
         40: 'down'
     };
 
-    player.handleInput(allowedKeys[e.keyCode]);
+    gameBoard.handleInput(allowedKeys[e.keyCode]);
 });
+
