@@ -25,8 +25,8 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    var topBuffer = 50;
-    var bottomBuffer = 141;
+    var topBuffer = 20;
+    var bottomBuffer = 100;
     canvas.width = 5 * 101;
     canvas.height = topBuffer + 6 * 83 + bottomBuffer;
 
@@ -133,7 +133,7 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                ctx.drawImage(Resources.get(rowImages[row]), col * 101, topBuffer + row * 83);
             }
         }
 
@@ -177,13 +177,18 @@ var Engine = (function(global) {
         'images/grass-block.png',
         'images/enemy-bug.png',
         'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png',
         'images/charm-red.png'
     ]);
     Resources.onReady(init);
 
-    /* Assign the canvas' context object to the global variable (the window
-     * object when run in a browser) so that developer's can use it more easily
+    /* Assign some objects to the global variable (the window
+     * object when run in a browser) so that developer's can use them more easily
      * from within their app.js files.
      */
     global.ctx = ctx;
+    global.topBuffer = topBuffer;
 })(this);

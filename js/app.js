@@ -8,11 +8,13 @@ function ScoreBoard() {
 };
 
 // Pseudoclass properties.
+ScoreBoard.Height = 48;
 ScoreBoard.LivesPerGame = 5;
+ScoreBoard.TitleTextY = 15;
 ScoreBoard.LivesPositionX = 5;
-ScoreBoard.LivesPositionY = -26;
+ScoreBoard.LivesPositionY = -6;
 ScoreBoard.ScorePositionX = 500;
-ScoreBoard.ScorePositionY = 40;
+ScoreBoard.ScorePositionY = 60;
 ScoreBoard.LivesSprite = 'images/char-boy.png';
 
 // Pseudoclass methods.
@@ -45,7 +47,8 @@ ScoreBoard.prototype.update = function() {
 ScoreBoard.prototype.render = function(score) {
     // Overwrite existing scoreboard.
     ctx.fillStyle = "#ffd800";
-    ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, 48);
+    ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, topBuffer + ScoreBoard.Height);
+
 
     // Render remaining lives icons.
     var image = Resources.get(ScoreBoard.LivesSprite);
@@ -55,13 +58,22 @@ ScoreBoard.prototype.render = function(score) {
         ctx.drawImage(image, ScoreBoard.LivesPositionX + i * width, ScoreBoard.LivesPositionY, width, height);
     }
 
-    // Render the score.
-    ctx.font = "28pt Impact";
+    // Render remaining lives title.
+    ctx.fillStyle = "black";
+    ctx.font = "12pt Impact";
+    ctx.textAlign = "left";
+    ctx.fillText("Remaining Lives", ScoreBoard.LivesPositionX, ScoreBoard.TitleTextY);
+
+    // Render remaining time and score title.
     ctx.textAlign = "right";
-    ctx.fillStyle = "red";
-    if (score !== "") {
-        ctx.fillText("Score " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
+    ctx.fillText("Remaining Time / Score", ScoreBoard.ScorePositionX, ScoreBoard.TitleTextY);
+
+    // Render the remaining time and score.
+    ctx.font = "32pt Impact";
+    if (gameBoard.stopwatch.seconds() <= 10) {
+        ctx.fillStyle = "red"; // hurry, game is almost over!
     }
+    ctx.fillText(gameBoard.stopwatch.seconds() + " / " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
 
     this.points = 0;
 }
@@ -75,9 +87,7 @@ function GameBoard(rows, columns) {
     this.rows = rows;
     this.columns = columns;
 
-    this.counter = 0;
-    this.seconds = 0;
-
+    this.stopwatch = new Stopwatch();
     this.paused = false;
 
     this.sounds = {
@@ -91,25 +101,24 @@ function GameBoard(rows, columns) {
 GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0; // always.
-GameBoard.FPS = 60; // frames per second.
-GameBoard.PointsPerSecond = 100; // when the player is inplay.
+GameBoard.PointsPerSecond = 100; // only when the player is active.
 
 // Pseudoclass methods.
 GameBoard.prototype.update = function() {
     if (this.paused) {
+        this.stopwatch.stop(); // pause.
         return;
     }
 
-    this.counter++;
-    if (this.counter == GameBoard.FPS) {
-        this.seconds++;
-        this.counter = 0;
-        console.log("Game seconds: " + this.getSeconds() + " ...");
+    this.stopwatch.start();
+
+    if (scoreBoard.remainingLives === 0) {
+        this.paused = true;
     }
 }
 
 GameBoard.prototype.getSeconds = function() {
-    return this.seconds;
+    return this.stopwatch.seconds();
 }
 
 GameBoard.prototype.getWidth = function() {
@@ -149,7 +158,7 @@ GameBoard.Random = function(lowLimit, highLimit) {
 }
 
 GameBoard.prototype.handleInput = function(key) {
-    // Key inputs related to the player.
+    // Key inputs related to the game board.
     switch (key) {
         case "pause":
             this.paused = !this.paused;
@@ -174,9 +183,9 @@ function RenderableItem(id, x, y, sprite) {
 // Pseudoclass methods.
 RenderableItem.prototype.render = function(width, height) {
     if (width == null && height == null) {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 101, 171);
+        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, 101, 171);
     } else {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y, width, height);
+        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height);
     }
 }
 
@@ -478,8 +487,6 @@ Charm.prototype.drop = function() {
             this.visible = true;
 
             gameBoard.playSound(gameBoard.sounds.charmdrop);
-            charmsManager.resetCharmTimer();
-
             return true;
         }
     }
@@ -538,6 +545,7 @@ CharmsManager.prototype.update = function() {
         for (var i = 0; i < this.charms.length; ++i) {
             var charm = this.charms[i];
             if (!charm.visible && charm.drop()) {
+                this.resetCharmTimer();
                 break;
             }
         }
@@ -545,10 +553,40 @@ CharmsManager.prototype.update = function() {
 }
 
 //---------------------------------
+// Stopwatch Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function Stopwatch() {
+    this.startTime = 0; // allows stopping and restarting.
+    this.elapsedTime = 0; // the stopwatch time; in milliseconds.
+};
+
+Stopwatch.prototype.start = function() {
+    this.startTime = this.startTime ? this.startTime : Date.now();
+}
+
+Stopwatch.prototype.stop = function() {
+    // Update elapsed time before stopping the stopwatch, if necessary.
+    this.elapsedTime = this.startTime ? this.elapsedTime + (Date.now() - this.startTime) : this.elapsedTime;
+    this.startTime = 0; // reinit for next start.
+};
+
+Stopwatch.prototype.reset = function() {
+    this.elapsedTime = 0;
+    this.startTime = 0;
+};
+
+Stopwatch.prototype.seconds = function() {
+    var ms = this.elapsedTime + (this.startTime ? Date.now() - this.startTime : 0);
+    return Math.floor(ms / 1000);
+};
+
+//---------------------------------
 // Global game objects.
 //---------------------------------
 
-// Instantiate a scoreboard object.
+// Instantiate our scoreboard object.
 var scoreBoard = new ScoreBoard();
 
 // Instantiate our Game Board object.
