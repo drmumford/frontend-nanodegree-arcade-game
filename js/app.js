@@ -4,7 +4,7 @@
 
 // Constructor.
 function ScoreBoard() {
-    this.reset();
+    this.init();
 };
 
 // Pseudoclass properties.
@@ -18,6 +18,11 @@ ScoreBoard.ScorePositionY = 60;
 ScoreBoard.LivesSprite = 'images/char-boy.png';
 
 // Pseudoclass methods.
+ScoreBoard.prototype.init = function() {
+    this.livesSprite = ScoreBoard.LivesSprite;
+    this.reset();
+}
+
 ScoreBoard.prototype.reset = function() {
     this.remainingLives = ScoreBoard.LivesPerGame;
     this.score = 0;
@@ -36,6 +41,10 @@ ScoreBoard.prototype.addPoints = function(points) {
     this.points += points;
 }
 
+ScoreBoard.prototype.setLivesSprite = function(sprite) {
+    this.livesSprite = sprite;
+}
+
 ScoreBoard.prototype.update = function() {
     if (gameBoard.paused) {
         return;
@@ -49,9 +58,8 @@ ScoreBoard.prototype.render = function(score) {
     ctx.fillStyle = "#ffd800";
     ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, topBuffer + ScoreBoard.Height);
 
-
     // Render remaining lives icons.
-    var image = Resources.get(ScoreBoard.LivesSprite);
+    var image = Resources.get(this.livesSprite);
     var width = image.width * 0.5;
     var height = image.height * 0.5;
     for (i = 0; i < this.remainingLives; ++i) {
@@ -157,14 +165,14 @@ GameBoard.Random = function(lowLimit, highLimit) {
     return lowLimit + Math.floor(Math.random() * (highLimit - lowLimit + 1));
 }
 
-GameBoard.prototype.handleInput = function(key) {
+GameBoard.prototype.handleInput = function(key, ctrlKey) {
     // Key inputs related to the game board.
     switch (key) {
         case "pause":
             this.paused = !this.paused;
             break;
         default:
-            player.handleInput(key);
+            player.handleInput(key, ctrlKey);
     }
 }
 
@@ -187,6 +195,11 @@ RenderableItem.prototype.render = function(width, height) {
     } else {
         ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height);
     }
+}
+
+RenderableItem.prototype.setSprite = function(sprite) {
+    this.sprite = sprite;
+    scoreBoard.setLivesSprite(sprite);
 }
 
 //---------------------------------
@@ -332,7 +345,7 @@ function Player(id) {
     var visibleWidth = 60;
     var startingXPosition = gameBoard.getWidth() / 2;
     var startingYPosition = gameBoard.getHeight() + Player.OffsetY;
-    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/char-boy.png');
+    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, Player.DefaultSprite);
 
     this.init();
 }
@@ -342,9 +355,24 @@ Player.prototype.constructor = Player;
 
 // Pseudoclass properties.
 Player.OffsetY = -8; // to vertically center the player in their row.
+Player.DefaultSprite = 'images/char-boy.png';
 
 // Pseudoclass methods.
 Player.prototype.init = function() {
+    // Build sprite array.
+    this.sprites = [
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png'
+    ];
+
+    this.spriteIndex = 0;
+    this.reset();
+}
+
+Player.prototype.reset = function() {
     this.lastSecond = gameBoard.getSeconds();
     this.row = gameBoard.getBottomRow();
     this.x = this.startingXPosition;
@@ -393,11 +421,7 @@ Player.prototype.detectCharmPickups = function() {
     }
 }
 
-Player.prototype.reset = function() {
-    this.init();
-}
-
-Player.prototype.handleInput = function(key) {
+Player.prototype.handleInput = function(key, ctrlKey) {
     // Key inputs related to the player.
     switch (key) {
         case "left":
@@ -407,10 +431,18 @@ Player.prototype.handleInput = function(key) {
             this.moveRight();
             break;
         case "up":
-            this.moveUp();
+            if (ctrlKey) {
+                this.setNextSprite();
+            } else {
+                this.moveUp();
+            }
             break;
         case "down":
-            this.moveDown();
+            if (ctrlKey) {
+                this.setPreviousSprite();
+            } else {
+                this.moveDown();
+            }
             break;
     }
 
@@ -446,6 +478,26 @@ Player.prototype.moveDown = function() {
         this.row++;
         this.y += GameBoard.TileHeight;
     }
+}
+
+Player.prototype.getDefaultPlayerSprite = function() {
+    return this.sprites[0];
+}
+
+Player.prototype.setNextSprite = function() {
+    this.spriteIndex++;
+    if (this.spriteIndex > (this.sprites.length - 1)) {
+        this.spriteIndex = 0;
+    }
+    this.setSprite(this.sprites[this.spriteIndex]);
+}
+
+Player.prototype.setPreviousSprite = function() {
+    this.spriteIndex--;
+    if (this.spriteIndex < 0) {
+        this.spriteIndex = this.sprites.length - 1;
+    }
+    this.setSprite(this.sprites[this.spriteIndex]);
 }
 
 Player.prototype.IsActive = function() {
@@ -611,7 +663,10 @@ var charmsManager = new CharmsManager();
 //---------------------------------
 
 // Handle 'keyup' events for allowed keys.
-document.addEventListener('keyup', function(e) {
+document.addEventListener('keydown', function(e) {
+    // Ensure event is not null.
+    e = e || window.event;
+
     var allowedKeys = {
         32: 'pause',
         37: 'left',
@@ -620,5 +675,5 @@ document.addEventListener('keyup', function(e) {
         40: 'down'
     };
 
-    gameBoard.handleInput(allowedKeys[e.keyCode]);
+    gameBoard.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
 });
