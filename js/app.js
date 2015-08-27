@@ -610,8 +610,7 @@ CharmsManager.prototype.update = function() {
 
 // Constructor.
 function Stopwatch() {
-    this.startTime = 0; // allows stopping and restarting.
-    this.elapsedTime = 0; // the stopwatch time; in milliseconds.
+    this.reset();
 };
 
 Stopwatch.prototype.start = function() {
@@ -625,8 +624,8 @@ Stopwatch.prototype.stop = function() {
 };
 
 Stopwatch.prototype.reset = function() {
-    this.elapsedTime = 0;
-    this.startTime = 0;
+    this.startTime = 0; // allows stopping and restarting.
+    this.elapsedTime = 0; // the stopwatch time; in milliseconds.
 };
 
 Stopwatch.prototype.seconds = function() {
