@@ -78,10 +78,10 @@ ScoreBoard.prototype.render = function(score) {
 
     // Render the remaining time and score.
     ctx.font = "32pt Impact";
-    if (gameBoard.stopwatch.seconds() <= 10) {
+    if (gameBoard.remainingTime <= 10) {
         ctx.fillStyle = "red"; // hurry, game is almost over!
     }
-    ctx.fillText(gameBoard.stopwatch.seconds() + " / " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
+    ctx.fillText(gameBoard.remainingTime + " / " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
 
     this.points = 0;
 }
@@ -97,6 +97,8 @@ function GameBoard(rows, columns) {
 
     this.stopwatch = new Stopwatch();
     this.paused = false;
+    this.remainingTime = GameBoard.GameDuration;
+    this.gameOver = false;
 
     this.sounds = {
         collision: "sounds/hit.wav",
@@ -110,6 +112,7 @@ GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0; // always.
 GameBoard.PointsPerSecond = 100; // only when the player is active.
+GameBoard.GameDuration = 15; // in seconds.
 
 // Pseudoclass methods.
 GameBoard.prototype.update = function() {
@@ -120,8 +123,10 @@ GameBoard.prototype.update = function() {
 
     this.stopwatch.start();
 
-    if (scoreBoard.remainingLives === 0) {
+    this.remainingTime = GameBoard.GameDuration - this.stopwatch.seconds();
+    if (scoreBoard.remainingLives === 0 || this.remainingTime === 0) {
         this.paused = true;
+        this.gameOver = true;
     }
 }
 
@@ -172,7 +177,10 @@ GameBoard.prototype.handleInput = function(key, ctrlKey) {
             this.paused = !this.paused;
             break;
         default:
-            player.handleInput(key, ctrlKey);
+            // All other input goes to the player, if allowed.
+            if (!this.paused) {
+                player.handleInput(key, ctrlKey);
+            }
     }
 }
 
@@ -613,6 +621,7 @@ function Stopwatch() {
     this.reset();
 };
 
+// Pseudoclass methods.
 Stopwatch.prototype.start = function() {
     this.startTime = this.startTime ? this.startTime : Date.now();
 }
