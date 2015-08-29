@@ -346,15 +346,6 @@ Enemy.prototype.init = function() {
 
     this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
     this.color = "red";
-
-    console.log("Bug " + this.id + ": " +
-        "Row " + this.row + ", " +
-        "Color = " + this.color + ", " +
-        "Delay = " + this.delay + ", " +
-        "Speed = " + this.speed + ", " +
-        "x = " + this.x + ", " +
-        "y = " + this.y
-        );
 }
 
 Enemy.prototype.getCharmSprite = function() {
@@ -519,9 +510,6 @@ Player.prototype.handleInput = function(key, ctrlKey) {
             }
             break;
     }
-
-    console.log("Player is " + (this.IsActive() ? "active" : "resting") +
-        ", Row " + this.row + " (" + this.x + ", " + this.y + ")");
 }
 
 Player.prototype.moveLeft = function() {
@@ -672,7 +660,6 @@ CharmsManager.prototype.update = function() {
     }
 
     this.seconds = gameBoard.getSeconds() - this.startingSeconds;
-    console.log("GameBoard.getSeconds: " + gameBoard.getSeconds() + ", startingSeconds: " + this.startingSeconds + ", delay: " + this.delay);
     if (this.seconds >= this.delay) {
         for (var i = 0; i < this.charms.length; ++i) {
             var charm = this.charms[i];
@@ -738,9 +725,6 @@ Dialog.prototype.init = function() {
 
     this.leftX = this.x + Dialog.LeftMargin;
     this.midX = this.x + (this.width / 2);
-
-    console.log("X: " + this.x + " Y: " + this.y + " midX: " + this.midX + " leftX: " + this.leftX);
-    console.log("H: " + gameBoard.getHeight() + " W: " + gameBoard.getWidth());
 
     this.visible = false;
 }
@@ -861,7 +845,6 @@ GameRulesDialog.prototype.contents = function() {
     y += 33;
     ctx.fillText("- Ctrl-up/down changes player", this.leftX, y);
 
-    //ctx.font = "25px Luckiest Guy";  //Dialog.NormalFont;
     ctx.textAlign = "center";
 
     y += 45;
