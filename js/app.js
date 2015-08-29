@@ -712,8 +712,11 @@ function Dialog() {
 
 // Pseudoclass properties.
 Dialog.LeftMargin = 0;
-Dialog.TitleFont = "italic 12px";
-Dialog.NormalFont = "8px";
+Dialog.TitleFont = "64px Luckiest Guy";
+Dialog.NormalFont = "25px Luckiest Guy";
+Dialog.SmallFont = "20px Luckiest Guy";
+Dialog.Bullet = String.fromCodePoint(0x2022);
+Dialog.Transparency = 0.83;
 
 // Pseudoclass methods.
 Dialog.prototype.init = function() {
@@ -758,7 +761,7 @@ Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke
         radius = 5;
     }
     ctx.fillStyle = "black";
-    ctx.globalAlpha = 0.8;
+    ctx.globalAlpha = Dialog.Transparency;
 
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -800,9 +803,6 @@ function GameRulesDialog() {
 GameRulesDialog.prototype = Object.create(Dialog.prototype);
 GameRulesDialog.prototype.constructor = GameRulesDialog;
 
-// Pseudoclass properties.
-//GameRulesDialog.XXX = "XXX";
-
 // Pseudoclass methods.
 GameRulesDialog.prototype.render = function() {
     if (this.visible) {
@@ -816,34 +816,34 @@ GameRulesDialog.prototype.contents = function() {
 
     ctx.fillStyle = "red";
     ctx.textAlign = "center";
-    ctx.font = "64px Luckiest Guy";  //Dialog.TitleFont;
+    ctx.font = Dialog.TitleFont;
     ctx.fillText("Game Rules", this.midX, y);
 
     ctx.textAlign = "left";
-    ctx.font = "25px Luckiest Guy";  //Dialog.NormalFont;
+    ctx.font = Dialog.NormalFont;
 
     y += 50;
-    ctx.fillText("- Move the Player using the", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + " Move the Player using the", this.leftX, y);
     y += 30;
     ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
     y += 33;
-    ctx.fillText("- Avoid the ladybugs!", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + " Avoid the ladybugs!", this.leftX, y);
     y += 33;
-    ctx.fillText("- Get points for each second", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + " Get points for each second", this.leftX, y);
     y += 30;
     ctx.fillText("   the player is in-play (the grass", this.leftX, y);
     y += 30;
     ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
     y += 33;
-    ctx.fillText("- Get points for cleaning up", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + " Get points for cleaning up", this.leftX, y);
     y += 30;
     ctx.fillText("   after the ladybugs", this.leftX, y);
     y += 33;
-    ctx.fillText("- Game is over when all lives", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + " Game is over when all lives", this.leftX, y);
     y += 30;
     ctx.fillText("   are used or the time is up", this.leftX, y);
     y += 33;
-    ctx.fillText("- Ctrl-up/down changes player", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + " Ctrl-up/down changes player", this.leftX, y);
 
     ctx.textAlign = "center";
 
@@ -887,16 +887,16 @@ GameOverDialog.prototype.contents = function() {
 
     ctx.fillStyle = "red";
     ctx.textAlign = "center";
-    ctx.font = "64px Luckiest Guy";  //Dialog.TitleFont;
+    ctx.font = Dialog.TitleFont;
     ctx.fillText("Game Over!", this.midX, y);
 
     if (this.reason != null) {
         y += 30;
-        ctx.font = "20px Luckiest Guy";
+        ctx.font = Dialog.SmallFont;
         ctx.fillText("(Outta " + this.reason + ")", this.midX, y);
     }
 
-    ctx.font = "25px Luckiest Guy";  //Dialog.NormalFont;
+    ctx.font = Dialog.NormalFont;
 
     y += 50;
     ctx.fillText("Hit the space bar", this.midX, y);
