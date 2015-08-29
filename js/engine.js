@@ -34,7 +34,6 @@ var Engine = (function(global) {
      * and handles properly calling the update and render methods.
      */
     function main() {
-
         /* Get our time delta information which is required if your game
          * requires smooth animation. Because everyone's computer processes
          * instructions at different speeds we need a constant value that
@@ -108,6 +107,7 @@ var Engine = (function(global) {
         charmsManager.render();
         renderEntities();
         scoreBoard.render();
+        gameRulesDialog.render();
         gameOverDialog.render();
     }
 
@@ -165,7 +165,7 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        gameBoard.paused = true; // for rules display.
     }
 
     /* Go ahead and load all of the images we know we're going to need to

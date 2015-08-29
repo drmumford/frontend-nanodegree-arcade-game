@@ -148,6 +148,7 @@ GameBoard.prototype.update = function() {
         this.paused = true;
         this.gameOver = true;
 
+        gameRulesDialog.hide();
         gameOverDialog.show();
     }
 }
@@ -162,9 +163,10 @@ GameBoard.prototype.isGameOver = function() {
         gameOverDialog.setReason(GameOverDialog.OuttaTimeReason);
         return true;
     }
-    
+
     return false; // play on!
 }
+
 GameBoard.prototype.getSeconds = function() {
     return this.stopwatch.seconds();
 }
@@ -220,24 +222,25 @@ GameBoard.prototype.handleInput = function(key, ctrlKey) {
     // Key inputs related to the game board.
     switch (key) {
         case "esc":
-            if (this.gameOver) {
+            if (this.gameOver || this.paused) {
+                gameRulesDialog.hide();
                 gameOverDialog.hide();
-                scoreBoard.setGutterMessage("Hit spacebar to play again!");
+                scoreBoard.setGutterMessage("Hit the spacebar to play!");
             }
             break;
-        case "pause":
+        case "space": // start or pause the game.
             if (this.gameOver) {
                 this.startNewGame();
             }
             else {
+                gameRulesDialog.hide();
+                scoreBoard.setGutterMessage(null);
                 this.paused = !this.paused;
             }
             break;
         default:
-            // All other input goes to the player, if allowed.
-            if (!this.paused) {
-                player.handleInput(key, ctrlKey);
-            }
+            // All other inputs are handled by the player.
+            player.handleInput(key, ctrlKey);
     }
 }
 
@@ -323,6 +326,8 @@ Enemy.prototype = Object.create(InteractiveItem.prototype);
 Enemy.prototype.constructor = Enemy;
 
 // Pseudoclass properties.
+Enemy.HitFromBehindBias = 5; // slightly bumping an enemy from behind, no worries.
+
 Enemy.MinDelay = 0;   // Delay is the time in game ticks that an enemy waits
 Enemy.MaxDelay = 100; // before starting a(nother) crossing of the game board.
 
@@ -358,6 +363,10 @@ Enemy.prototype.getCharmSprite = function() {
         default:
             return 'images/charm-red.png'; // currently, just red.
     }
+}
+
+Enemy.prototype.leftX = function() {
+    return this.x + (this.width / 2) - this.halfVisibleWidth + Enemy.HitFromBehindBias;
 }
 
 Enemy.prototype.centeredInTile = function() {
@@ -517,21 +526,21 @@ Player.prototype.handleInput = function(key, ctrlKey) {
 
 Player.prototype.moveLeft = function() {
     // If we're not in the far left column, then we can move left.
-    if (this.x >= GameBoard.TileWidth) {
+    if (!gameBoard.paused && (this.x >= GameBoard.TileWidth)) {
         this.x -= GameBoard.TileWidth;
     }
 }
 
 Player.prototype.moveRight = function() {
     // If we're not in the far right column, then we can move right.
-    if (this.x + GameBoard.TileWidth < ctx.canvas.width) {
+    if (!gameBoard.paused && ((this.x + GameBoard.TileWidth) < ctx.canvas.width)) {
         this.x += GameBoard.TileWidth;
     }
 }
 
 Player.prototype.moveUp = function() {
     // If we're not in the top row, then we can move up.
-    if (this.row > GameBoard.TopRow) {
+    if (!gameBoard.paused && (this.row > GameBoard.TopRow)) {
         this.row--;
         this.y -= GameBoard.TileHeight;
     }
@@ -539,7 +548,7 @@ Player.prototype.moveUp = function() {
 
 Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
-    if (this.row < gameBoard.getBottomRow()) {
+    if (!gameBoard.paused && (this.row < gameBoard.getBottomRow())) {
         this.row++;
         this.y += GameBoard.TileHeight;
     }
@@ -745,13 +754,13 @@ Dialog.prototype.hide = function() {
 }
 
 /**
- * Draws a rounded rectangle using the current state of the canvas. 
- * If you omit the last three params, it will draw a rectangle 
- * outline with a 5 pixel border radius 
+ * Draws a rounded rectangle using the current state of the canvas.
+ * If you omit the last three params, it will draw a rectangle
+ * outline with a 5 pixel border radius
  * @param {CanvasRenderingContext2D} ctx
  * @param {Number} x The top left x coordinate
- * @param {Number} y The top left y coordinate 
- * @param {Number} width The width of the rectangle 
+ * @param {Number} y The top left y coordinate
+ * @param {Number} width The width of the rectangle
  * @param {Number} height The height of the rectangle
  * @param {Number} radius The corner radius. Defaults to 5;
  * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
@@ -786,6 +795,79 @@ Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke
     }
 
     ctx.globalAlpha = 1.0;
+}
+
+//---------------------------------
+// GameRulesDialog Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function GameRulesDialog() {
+    this.init();
+
+    var extraWidth = 88; // make this a constant.
+    this.width = this.width + extraWidth; // a bit wider than default.
+    this.height = this.height + 315; // a bit longer too.
+    this.x = this.x - (extraWidth / 2); // to keep centered.
+    this.y = this.y - 28;
+    this.visible = true; // shown on startup.
+}
+
+GameRulesDialog.prototype = Object.create(Dialog.prototype);
+GameRulesDialog.prototype.constructor = GameRulesDialog;
+
+// Pseudoclass properties.
+//GameRulesDialog.XXX = "XXX";
+
+// Pseudoclass methods.
+GameRulesDialog.prototype.render = function() {
+    if (this.visible) {
+        this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
+        this.contents();
+    }
+}
+
+GameRulesDialog.prototype.contents = function() {
+    var y = this.y + 70;
+
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.font = "64px Luckiest Guy";  //Dialog.TitleFont;
+    ctx.fillText("Game Rules", this.midX, y);
+
+    ctx.textAlign = "left";
+    ctx.font = "25px Luckiest Guy";  //Dialog.NormalFont;
+
+    y += 50;
+    ctx.fillText("- Move the Player using the", this.leftX, y);
+    y += 30;
+    ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
+    y += 33;
+    ctx.fillText("- Avoid the ladybugs!", this.leftX, y);
+    y += 33;
+    ctx.fillText("- Get points for each second", this.leftX, y);
+    y += 30;
+    ctx.fillText("   the player is in-play (the grass", this.leftX, y);
+    y += 30;
+    ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
+    y += 33;
+    ctx.fillText("- Get points for cleaning up", this.leftX, y);
+    y += 30;
+    ctx.fillText("   after the ladybugs", this.leftX, y);
+    y += 33;
+    ctx.fillText("- Game is over when all lives", this.leftX, y);
+    y += 30;
+    ctx.fillText("   are used or the time is up", this.leftX, y);
+    y += 33;
+    ctx.fillText("- Ctrl-up/down changes player", this.leftX, y);
+
+    //ctx.font = "25px Luckiest Guy";  //Dialog.NormalFont;
+    ctx.textAlign = "center";
+
+    y += 45;
+    ctx.fillText("Hit the space bar", this.midX, y);
+    y += 30;
+    ctx.fillText("to play ...", this.midX, y);
 }
 
 //---------------------------------
@@ -850,7 +932,7 @@ var scoreBoard = new ScoreBoard();
 var gameBoard = new GameBoard(6, 5);
 
 // Instantiate our Game Rules dialog.
-//var gameRulesDialog = new GameRulesDialog();
+var gameRulesDialog = new GameRulesDialog();
 
 // Instantiate our Game Over dialog.
 var gameOverDialog = new GameOverDialog();
@@ -880,7 +962,7 @@ document.addEventListener('keydown', function(e) {
 
     var allowedKeys = {
         27: 'esc',
-        32: 'pause',
+        32: 'space',
         37: 'left',
         38: 'up',
         39: 'right',
