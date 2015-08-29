@@ -124,7 +124,7 @@ GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0; // always.
 GameBoard.PointsPerSecond = 100; // only when the player is active.
-GameBoard.GameDuration = 10; // in seconds.
+GameBoard.GameDuration = 120; // in seconds.
 
 // Pseudoclass methods.
 GameBoard.prototype.reset = function() {
@@ -944,6 +944,7 @@ allEnemies.push(new Enemy(1));
 allEnemies.push(new Enemy(2));
 allEnemies.push(new Enemy(3));
 allEnemies.push(new Enemy(4));
+allEnemies.push(new Enemy(5));
 
 // Instantiate player objects.
 var player = new Player(0); // just one currently.
