@@ -25,6 +25,7 @@ ScoreBoard.prototype.init = function() {
 
 ScoreBoard.prototype.reset = function() {
     this.remainingLives = ScoreBoard.LivesPerGame;
+    this.gutterMessage = null;
     this.score = 0;
     this.points = 0;
 }
@@ -43,6 +44,10 @@ ScoreBoard.prototype.addPoints = function(points) {
 
 ScoreBoard.prototype.setLivesSprite = function(sprite) {
     this.livesSprite = sprite;
+}
+
+ScoreBoard.prototype.setGutterMessage = function(message) {
+    this.gutterMessage = message;
 }
 
 ScoreBoard.prototype.update = function() {
@@ -68,7 +73,7 @@ ScoreBoard.prototype.render = function(score) {
 
     // Render remaining lives title.
     ctx.fillStyle = "black";
-    ctx.font = "12pt Impact";
+    ctx.font = "18px Luckiest Guy";
     ctx.textAlign = "left";
     ctx.fillText("Remaining Lives", ScoreBoard.LivesPositionX, ScoreBoard.TitleTextY);
 
@@ -77,13 +82,22 @@ ScoreBoard.prototype.render = function(score) {
     ctx.fillText("Remaining Time / Score", ScoreBoard.ScorePositionX, ScoreBoard.TitleTextY);
 
     // Render the remaining time and score.
-    ctx.font = "32pt Impact";
-    if (gameBoard.remainingTime <= 10) {
-        ctx.fillStyle = "red"; // hurry, game is almost over!
-    }
+    ctx.font = "40px Luckiest Guy";
     ctx.fillText(gameBoard.remainingTime + " / " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
 
+    this.renderGutterMessage();
     this.points = 0;
+}
+
+ScoreBoard.prototype.renderGutterMessage = function() {
+    if (this.gutterMessage != null) {
+        ctx.fillStyle = "black";
+        ctx.font = "25px Luckiest Guy";
+        ctx.textAlign = "center";
+        ctx.fillText(this.gutterMessage,
+            GameBoard.TileWidth / 2 + gameBoard.getWidth() / 2,
+            GameBoard.TileHeight / 2 + gameBoard.getHeight());
+    }
 }
 
 //---------------------------------
@@ -94,17 +108,15 @@ ScoreBoard.prototype.render = function(score) {
 function GameBoard(rows, columns) {
     this.rows = rows;
     this.columns = columns;
-
     this.stopwatch = new Stopwatch();
-    this.paused = false;
-    this.remainingTime = GameBoard.GameDuration;
-    this.gameOver = false;
 
     this.sounds = {
         collision: "sounds/hit.wav",
         charmdrop: "sounds/thud.wav",
         charmpickup: "sounds/pop.wav"
     }
+
+    this.reset();
 };
 
 // Pseudoclass properties.
@@ -112,9 +124,16 @@ GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0; // always.
 GameBoard.PointsPerSecond = 100; // only when the player is active.
-GameBoard.GameDuration = 15; // in seconds.
+GameBoard.GameDuration = 10; // in seconds.
 
 // Pseudoclass methods.
+GameBoard.prototype.reset = function() {
+    this.stopwatch.reset();
+    this.remainingTime = GameBoard.GameDuration;
+    this.paused = false;
+    this.gameOver = false;
+}
+
 GameBoard.prototype.update = function() {
     if (this.paused) {
         this.stopwatch.stop(); // pause.
@@ -122,14 +141,30 @@ GameBoard.prototype.update = function() {
     }
 
     this.stopwatch.start();
-
     this.remainingTime = GameBoard.GameDuration - this.stopwatch.seconds();
-    if (scoreBoard.remainingLives === 0 || this.remainingTime === 0) {
+
+    // Determine if the game is over.
+    if (this.isGameOver()) {
         this.paused = true;
         this.gameOver = true;
+
+        gameOverDialog.show();
     }
 }
 
+GameBoard.prototype.isGameOver = function() {
+    if (scoreBoard.remainingLives === 0) {
+        gameOverDialog.setReason(GameOverDialog.OuttaLivesReason);
+        return true;
+    }
+
+    if (this.remainingTime === 0) {
+        gameOverDialog.setReason(GameOverDialog.OuttaTimeReason);
+        return true;
+    }
+    
+    return false; // play on!
+}
 GameBoard.prototype.getSeconds = function() {
     return this.stopwatch.seconds();
 }
@@ -165,6 +200,17 @@ GameBoard.prototype.playSound = function(soundFile) {
     sound.play();
 }
 
+GameBoard.prototype.startNewGame = function() {
+    gameOverDialog.hide();
+    scoreBoard.reset();
+    gameBoard.reset();
+    player.reset();
+    charmsManager.reset();
+    for (var i = 0; i < allEnemies.length; ++i) {
+        allEnemies[i].init();
+    }
+}
+
 // Generate a random number x, where lowLimit <= x <= highLimit.
 GameBoard.Random = function(lowLimit, highLimit) {
     return lowLimit + Math.floor(Math.random() * (highLimit - lowLimit + 1));
@@ -173,8 +219,19 @@ GameBoard.Random = function(lowLimit, highLimit) {
 GameBoard.prototype.handleInput = function(key, ctrlKey) {
     // Key inputs related to the game board.
     switch (key) {
+        case "esc":
+            if (this.gameOver) {
+                gameOverDialog.hide();
+                scoreBoard.setGutterMessage("Hit spacebar to play again!");
+            }
+            break;
         case "pause":
-            this.paused = !this.paused;
+            if (this.gameOver) {
+                this.startNewGame();
+            }
+            else {
+                this.paused = !this.paused;
+            }
             break;
         default:
             // All other input goes to the player, if allowed.
@@ -537,7 +594,6 @@ Charm.prototype.drop = function() {
     // Charms are dropped beneath an enemy; find one in an acceptable position.
     for (var i = 0; i < allEnemies.length; ++i) {
         var enemy = allEnemies[i];
-
         if (enemy.centeredInTile()) {
             // (Re)Init the charm using the enemy's properties.
             this.x = enemy.x;
@@ -550,7 +606,6 @@ Charm.prototype.drop = function() {
             return true;
         }
     }
-
     return false; // no enemy is in a position to drop.
 }
 
@@ -576,6 +631,13 @@ CharmsManager.MinDelay = 2; // Variable delay in seconds to wait
 CharmsManager.MaxDelay = 4; // before dropping a(nother) charm.
 
 // Pseudoclass methods.
+CharmsManager.prototype.reset = function() {
+    this.resetCharmTimer();
+    for (var i = 0; i < this.charms.length; ++i) {
+        this.charms[i].visible = false;
+    }
+}
+
 CharmsManager.prototype.resetCharmTimer = function() {
     this.seconds = 0;
     this.startingSeconds = gameBoard.getSeconds();
@@ -601,6 +663,7 @@ CharmsManager.prototype.update = function() {
     }
 
     this.seconds = gameBoard.getSeconds() - this.startingSeconds;
+    console.log("GameBoard.getSeconds: " + gameBoard.getSeconds() + ", startingSeconds: " + this.startingSeconds + ", delay: " + this.delay);
     if (this.seconds >= this.delay) {
         for (var i = 0; i < this.charms.length; ++i) {
             var charm = this.charms[i];
@@ -643,6 +706,140 @@ Stopwatch.prototype.seconds = function() {
 };
 
 //---------------------------------
+// Dialog Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function Dialog() {
+    this.init();
+}
+
+// Pseudoclass properties.
+Dialog.LeftMargin = 10;
+Dialog.TitleFont = "italic 12px";
+Dialog.NormalFont = "8px";
+
+// Pseudoclass methods.
+Dialog.prototype.init = function() {
+    this.width = gameBoard.getWidth();
+    this.height = gameBoard.getHeight() / 2;
+
+    this.x = GameBoard.TileWidth / 2;
+    this.y = this.height / 2;
+
+    this.leftX = this.x + Dialog.LeftMargin;
+    this.midX = this.x + (this.width / 2);
+
+    console.log("X: " + this.x + " Y: " + this.y + " midX: " + this.midX + " leftX: " + this.leftX);
+    console.log("H: " + gameBoard.getHeight() + " W: " + gameBoard.getWidth());
+
+    this.visible = false;
+}
+
+Dialog.prototype.show = function() {
+    this.visible = true;
+}
+
+Dialog.prototype.hide = function() {
+    this.visible = false;
+}
+
+/**
+ * Draws a rounded rectangle using the current state of the canvas. 
+ * If you omit the last three params, it will draw a rectangle 
+ * outline with a 5 pixel border radius 
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Number} x The top left x coordinate
+ * @param {Number} y The top left y coordinate 
+ * @param {Number} width The width of the rectangle 
+ * @param {Number} height The height of the rectangle
+ * @param {Number} radius The corner radius. Defaults to 5;
+ * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
+ * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
+ */
+Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke) {
+    if (typeof stroke == "undefined") {
+        stroke = true;
+    }
+    if (typeof radius === "undefined") {
+        radius = 5;
+    }
+    ctx.fillStyle = "black";
+    ctx.globalAlpha = 0.8;
+
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    if (stroke) {
+        ctx.stroke();
+    }
+    if (fill) {
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1.0;
+}
+
+//---------------------------------
+// GameOverDialog Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function GameOverDialog() {
+    this.reason = null;
+    this.init();
+}
+
+GameOverDialog.prototype = Object.create(Dialog.prototype);
+GameOverDialog.prototype.constructor = GameOverDialog;
+
+// Pseudoclass properties.
+GameOverDialog.OuttaTimeReason = "Time";
+GameOverDialog.OuttaLivesReason = "Lives";
+
+// Pseudoclass methods.
+GameOverDialog.prototype.setReason = function(reason) {
+    this.reason = reason;
+}
+
+GameOverDialog.prototype.render = function() {
+    if (this.visible) {
+        this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
+        this.contents();
+    }
+}
+
+GameOverDialog.prototype.contents = function() {
+    var y = this.y + 75;
+
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.font = "64px Luckiest Guy";  //Dialog.TitleFont;
+    ctx.fillText("Game Over!", this.midX, y);
+
+    if (this.reason != null) {
+        y += 30;
+        ctx.font = "20px Luckiest Guy";
+        ctx.fillText("(Outta " + this.reason + ")", this.midX, y);
+    }
+
+    ctx.font = "25px Luckiest Guy";  //Dialog.NormalFont;
+
+    y += 50;
+    ctx.fillText("Hit the space bar", this.midX, y);
+    y += 30;
+    ctx.fillText("to play again ...", this.midX, y);
+}
+
+//---------------------------------
 // Global game objects.
 //---------------------------------
 
@@ -651,6 +848,12 @@ var scoreBoard = new ScoreBoard();
 
 // Instantiate our Game Board object.
 var gameBoard = new GameBoard(6, 5);
+
+// Instantiate our Game Rules dialog.
+//var gameRulesDialog = new GameRulesDialog();
+
+// Instantiate our Game Over dialog.
+var gameOverDialog = new GameOverDialog();
 
 // Instantiate enemy objects.
 var allEnemies = [];
@@ -670,12 +873,13 @@ var charmsManager = new CharmsManager();
 // Event handlers.
 //---------------------------------
 
-// Handle 'keyup' events for allowed keys.
+// Handle 'keydown' events for allowed keys.
 document.addEventListener('keydown', function(e) {
     // Ensure event is not null.
     e = e || window.event;
 
     var allowedKeys = {
+        27: 'esc',
         32: 'pause',
         37: 'left',
         38: 'up',

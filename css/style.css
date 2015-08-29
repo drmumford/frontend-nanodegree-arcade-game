@@ -8,10 +8,10 @@ body {
     width: 505px;
     margin: auto;
     color: red;
-    font: 40px/80px Impact, Gadget, Fantasy;
+    font: 40px/80px 'Luckiest Guy', cursive;
     border-radius: 15px;
 }
 
-header {
-    height: 80px;
+footer {
+    font: 20px/40px 'Luckiest Guy', cursive;
 }

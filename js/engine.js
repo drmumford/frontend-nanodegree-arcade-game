@@ -98,13 +98,20 @@ var Engine = (function(global) {
         scoreBoard.update();
     }
 
-    /* This function initially draws the "game level", it will then call
-     * the renderEntities function. Remember, this function is called every
-     * game tick (or loop of the game engine) because that's how games work -
-     * they are flipbooks creating the illusion of animation but in reality
-     * they are just drawing the entire screen over and over.
+    /* This function sequential renders of the games objects. Remember, this
+     * function is called every game tick (or loop of the game engine) because
+     * that's how games work - they are flipbooks creating the illusion of
+     * animation but in reality they are just drawing the entire screen over and over.
      */
     function render() {
+        renderGameBoard();
+        charmsManager.render();
+        renderEntities();
+        scoreBoard.render();
+        gameOverDialog.render();
+    }
+
+    function renderGameBoard() {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -115,7 +122,7 @@ var Engine = (function(global) {
                 'images/stone-block.png',   // Row 4 of 4 of stone
                 'images/grass-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png',   // Row 2 of 2 of grass
-            ],
+        ],
             numRows = 6,
             numCols = 5,
             row, col;
@@ -136,9 +143,6 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, topBuffer + row * 83);
             }
         }
-
-
-        renderEntities();
     }
 
     /* This function is called by the render function and is called on each game
@@ -146,9 +150,6 @@ var Engine = (function(global) {
      * on your enemy and player entities within app.js
      */
     function renderEntities() {
-
-        charmsManager.render();
-
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
@@ -157,7 +158,6 @@ var Engine = (function(global) {
         });
 
         player.render();
-        scoreBoard.render();
     }
 
     /* This function does nothing but it could have been a good place to
