@@ -724,7 +724,7 @@ function Dialog() {
 }
 
 // Pseudoclass properties.
-Dialog.LeftMargin = 10;
+Dialog.LeftMargin = 0;
 Dialog.TitleFont = "italic 12px";
 Dialog.NormalFont = "8px";
 
