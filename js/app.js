@@ -357,7 +357,7 @@ Enemy.prototype.init = function() {
     this.spriteIndex = this.getIndex();
 
     // Index determines:
-    //  - the sprite by indexing into the sprites array, and
+    //  - the sprite by indexing into the playerInfo array, and
     //  - which player can make it a zombie; i.e. the player
     //    with the same index value.
     this.sprite = this.enemyInfo[this.spriteIndex].sprite;
@@ -385,7 +385,7 @@ Enemy.prototype.getCharmSprite = function() {
 
 Enemy.prototype.getIndex = function() {
     //this.spriteIndex = (this.speed - Enemy.MinSpeed) /
-    //    ((Enemy.MaxSpeed - Enemy.MinSpeed) / this.sprites.length);
+    //    ((Enemy.MaxSpeed - Enemy.MinSpeed) / this.playerInfo.length);
     if (this.speed < 120) {
         return 0;
     }
@@ -471,12 +471,12 @@ Player.DefaultSprite = 'images/char-boy.png';
 // Pseudoclass methods.
 Player.prototype.init = function() {
     // Build sprite array.
-    this.sprites = [
-        'images/char-cat-girl.png',
-        'images/char-pink-girl.png',
-        'images/char-princess-girl.png',
-        'images/char-horn-girl.png',
-        'images/char-boy.png'
+    this.playerInfo = [
+        { sprite: 'images/char-cat-girl.png' },
+        { sprite: 'images/char-pink-girl.png' },
+        { sprite: 'images/char-princess-girl.png' },
+        { sprite: 'images/char-horn-girl.png' },
+        { sprite: 'images/char-boy.png' }
     ];
 
     this.spriteIndex = 0;
@@ -593,25 +593,25 @@ Player.prototype.moveDown = function() {
 }
 
 Player.prototype.getDefaultPlayerSprite = function() {
-    return this.sprites[0];
+    return this.playerInfo[0].sprite;
 }
 
 Player.prototype.setNextSprite = function() {
     this.spriteIndex++;
-    if (this.spriteIndex > (this.sprites.length - 1)) {
+    if (this.spriteIndex > (this.playerInfo.length - 1)) {
         this.spriteIndex = 0;
     }
-    this.setSprite(this.sprites[this.spriteIndex]);
-    scoreBoard.setLivesSprite(this.sprites[this.spriteIndex]);
+    this.setSprite(this.playerInfo[this.spriteIndex].sprite);
+    scoreBoard.setLivesSprite(this.playerInfo[this.spriteIndex].sprite);
 }
 
 Player.prototype.setPreviousSprite = function() {
     this.spriteIndex--;
     if (this.spriteIndex < 0) {
-        this.spriteIndex = this.sprites.length - 1;
+        this.spriteIndex = this.playerInfo.length - 1;
     }
-    this.setSprite(this.sprites[this.spriteIndex]);
-    scoreBoard.setLivesSprite(this.sprites[this.spriteIndex]);
+    this.setSprite(this.playerInfo[this.spriteIndex].sprite);
+    scoreBoard.setLivesSprite(this.playerInfo[this.spriteIndex].sprite);
 }
 
 Player.prototype.IsActive = function() {
