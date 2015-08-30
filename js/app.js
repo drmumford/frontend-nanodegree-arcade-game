@@ -259,7 +259,7 @@ function RenderableItem(id, x, y, sprite) {
 // Pseudoclass methods.
 RenderableItem.prototype.render = function(width, height) {
     if (width == null && height == null) {
-        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, 101, 171);
+        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y);
     } else {
         ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height);
     }
@@ -267,7 +267,6 @@ RenderableItem.prototype.render = function(width, height) {
 
 RenderableItem.prototype.setSprite = function(sprite) {
     this.sprite = sprite;
-    scoreBoard.setLivesSprite(sprite);
 }
 
 //---------------------------------
@@ -317,7 +316,25 @@ function Enemy(id) {
     var visibleWidth = 101;
     var startingXPosition = -GameBoard.TileWidth; // off-canvas.
     var startingYPosition = 0; // dynamically determined.
-    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-bug.png');
+    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-red.png');
+
+    // Build sprite array.
+    this.sprites = [
+        'images/enemy-green.png',
+        'images/enemy-blue.png',
+        'images/enemy-yellow.png',
+        'images/enemy-purple.png',
+        'images/enemy-red.png'
+    ];
+
+    // Build associated charms array.
+    this.charmSprites = [
+        'images/charm-green.png',
+        'images/charm-blue.png',
+        'images/charm-yellow.png',
+        'images/charm-purple.png',
+        'images/charm-red.png'
+    ];
 
     this.init();
 }
@@ -327,6 +344,7 @@ Enemy.prototype.constructor = Enemy;
 
 // Pseudoclass properties.
 Enemy.HitFromBehindBias = 5; // slightly bumping an enemy from behind, no worries.
+Enemy.ZombieLifetime = 100; // time in game ticks for a zombie to fade away.
 
 Enemy.MinDelay = 0;   // Delay is the time in game ticks that an enemy waits
 Enemy.MaxDelay = 100; // before starting a(nother) crossing of the game board.
@@ -345,15 +363,52 @@ Enemy.prototype.init = function() {
     this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
 
     this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
-    this.color = "red";
+    this.spriteIndex = this.getIndex();
+
+    // Index determines:
+    //  - the sprite by indexing into the sprites array, and
+    //  - which player can make it a zombie; i.e. the player
+    //    with the same index value.
+    this.sprite = this.sprites[this.spriteIndex];
+
+    this.zombieCounter = Enemy.ZombieLifetime;
+    this.zombie = false;
+}
+
+Enemy.prototype.render = function() {
+    if (this.zombie) {
+        ctx.globalAlpha = this.zombieCounter / Enemy.ZombieLifetime;
+        InteractiveItem.prototype.render.call(this);
+        ctx.globalAlpha = 1;
+        if (this.zombieCounter > 0) {
+            this.zombieCounter--;
+        }
+    } else {
+        InteractiveItem.prototype.render.call(this);
+    }
 }
 
 Enemy.prototype.getCharmSprite = function() {
-    switch (this.color) {
-        case "red":
-        default:
-            return 'images/charm-red.png'; // currently, just red.
+    return this.charmSprites[this.spriteIndex];
+}
+
+Enemy.prototype.getIndex = function() {
+    //this.spriteIndex = (this.speed - Enemy.MinSpeed) /
+    //    ((Enemy.MaxSpeed - Enemy.MinSpeed) / this.sprites.length);
+    if (this.speed < 120) {
+        return 0;
     }
+    if (this.speed < 165) {
+        return 1;
+    }
+    if (this.speed < 210) {
+        return 2;
+    }
+    if (this.speed < 255) {
+        return 3;
+    }
+
+    return 4;
 }
 
 Enemy.prototype.leftX = function() {
@@ -468,10 +523,14 @@ Player.prototype.update = function() {
 Player.prototype.detectEnemyCollisions = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
         if (this.overlapsWith(allEnemies[i])) {
-            scoreBoard.removeLife();
-            gameBoard.playSound(gameBoard.sounds.collision);
-            this.reset();
-            break;
+            if (this.spriteIndex != allEnemies[i].spriteIndex) {
+                scoreBoard.removeLife();
+                gameBoard.playSound(gameBoard.sounds.collision);
+                this.reset();
+                break;
+            } else {
+                allEnemies[i].zombie = true; // watch out!
+            }
         }
     }
 }
@@ -552,6 +611,7 @@ Player.prototype.setNextSprite = function() {
         this.spriteIndex = 0;
     }
     this.setSprite(this.sprites[this.spriteIndex]);
+    scoreBoard.setLivesSprite(this.sprites[this.spriteIndex]);
 }
 
 Player.prototype.setPreviousSprite = function() {
@@ -560,6 +620,7 @@ Player.prototype.setPreviousSprite = function() {
         this.spriteIndex = this.sprites.length - 1;
     }
     this.setSprite(this.sprites[this.spriteIndex]);
+    scoreBoard.setLivesSprite(this.sprites[this.spriteIndex]);
 }
 
 Player.prototype.IsActive = function() {

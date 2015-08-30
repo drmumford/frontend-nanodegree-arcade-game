@@ -175,13 +175,21 @@ var Engine = (function(global) {
     Resources.load([
         'images/stone-block.png',
         'images/grass-block.png',
-        'images/enemy-bug.png',
         'images/char-boy.png',
         'images/char-cat-girl.png',
         'images/char-horn-girl.png',
         'images/char-pink-girl.png',
         'images/char-princess-girl.png',
-        'images/charm-red.png'
+        'images/enemy-green.png',
+        'images/enemy-blue.png',
+        'images/enemy-yellow.png',
+        'images/enemy-purple.png',
+        'images/enemy-red.png',
+        'images/charm-green.png',
+        'images/charm-blue.png',
+        'images/charm-yellow.png',
+        'images/charm-purple.png',
+        'images/charm-red.png',
     ]);
     Resources.onReady(init);
 
