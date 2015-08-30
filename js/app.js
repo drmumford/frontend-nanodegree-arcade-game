@@ -481,11 +481,11 @@ Player.DefaultSprite = 'images/char-boy.png';
 Player.prototype.init = function() {
     // Build sprite array.
     this.sprites = [
-        'images/char-boy.png',
         'images/char-cat-girl.png',
-        'images/char-horn-girl.png',
         'images/char-pink-girl.png',
-        'images/char-princess-girl.png'
+        'images/char-princess-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-boy.png'
     ];
 
     this.spriteIndex = 0;
