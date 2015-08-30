@@ -319,21 +319,12 @@ function Enemy(id) {
     InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-red.png');
 
     // Build sprite array.
-    this.sprites = [
-        'images/enemy-green.png',
-        'images/enemy-blue.png',
-        'images/enemy-yellow.png',
-        'images/enemy-purple.png',
-        'images/enemy-red.png'
-    ];
-
-    // Build associated charms array.
-    this.charmSprites = [
-        'images/charm-green.png',
-        'images/charm-blue.png',
-        'images/charm-yellow.png',
-        'images/charm-purple.png',
-        'images/charm-red.png'
+    this.enemyInfo = [
+        { sprite: 'images/enemy-green.png', charm: 'images/charm-green.png' },
+        { sprite: 'images/enemy-blue.png', charm: 'images/charm-blue.png' },
+        { sprite: 'images/enemy-yellow.png', charm: 'images/charm-yellow.png' },
+        { sprite: 'images/enemy-purple.png', charm: 'images/charm-purple.png' },
+        { sprite: 'images/enemy-red.png', charm: 'images/charm-red.png' }
     ];
 
     this.init();
@@ -369,7 +360,7 @@ Enemy.prototype.init = function() {
     //  - the sprite by indexing into the sprites array, and
     //  - which player can make it a zombie; i.e. the player
     //    with the same index value.
-    this.sprite = this.sprites[this.spriteIndex];
+    this.sprite = this.enemyInfo[this.spriteIndex].sprite;
 
     this.zombieCounter = Enemy.ZombieLifetime;
     this.zombie = false;
@@ -389,7 +380,7 @@ Enemy.prototype.render = function() {
 }
 
 Enemy.prototype.getCharmSprite = function() {
-    return this.charmSprites[this.spriteIndex];
+    return this.enemyInfo[this.spriteIndex].charm;
 }
 
 Enemy.prototype.getIndex = function() {
