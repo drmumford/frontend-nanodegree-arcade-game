@@ -632,7 +632,7 @@ Player.prototype.IsActive = function() {
 // Constructor.
 function Charm(id, points) {
     InteractiveItem.call(this, id, Charm.Width * 0.25, Charm.VisibleWidth, 0, 0, null);
-    this.points = points;
+    this.points = (points == null ? Charm.DefaultPoints : points);
     this.visible = false;
 }
 
@@ -644,6 +644,7 @@ Charm.Width = 101;
 Charm.Height = 171;
 Charm.VisibleWidth = 20;
 Charm.OffsetY = 93;
+Charm.DefaultPoints = 1000;
 
 // Pseudoclass methods.
 Charm.prototype.drop = function() {
@@ -678,7 +679,7 @@ Charm.prototype.pickup = function() {
 
 // Constructor.
 function CharmsManager() {
-    this.charms = [new Charm(0, 10), new Charm(1, 20), new Charm(2, 30)];
+    this.charms = [new Charm(0), new Charm(1), new Charm(2)];
     this.resetCharmTimer();
 }
 
