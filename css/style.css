@@ -15,3 +15,16 @@ body {
 footer {
     font: 20px/40px 'Luckiest Guy', cursive;
 }
+
+a:link {
+    color: blue;
+    background-color: transparent;
+    text-decoration: none;
+}
+
+a:hover {
+    color: purple;
+    background-color: transparent;
+    text-decoration: underline;
+    cursor: pointer;
+}

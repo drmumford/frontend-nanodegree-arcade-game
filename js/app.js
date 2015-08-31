@@ -966,6 +966,29 @@ GameOverDialog.prototype.contents = function() {
 }
 
 //---------------------------------
+// Global Helpers.
+//---------------------------------
+
+function showScreen(screen) {
+    var paused = gameBoard.paused;
+    if (!paused) {
+        gameBoard.paused = true;
+    }
+
+    switch (screen) {
+        case "Attribution":
+            alert("Hold tight, showing attribution will be implemented shortly ..."); //attributionDialog.show();
+            break;
+        case "Game Rules":
+            alert("Hold tight, showing the game rules will be implemented shortly ..."); //gameRulesDialog.show();
+            break;
+        default:
+    }
+
+    gameBoard.paused = paused;
+}
+
+//---------------------------------
 // Global game objects.
 //---------------------------------
 
