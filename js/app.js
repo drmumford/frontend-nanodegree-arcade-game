@@ -481,7 +481,7 @@ Player.prototype.init = function() {
         { sprite: 'images/char-boy.png' }
     ];
 
-    this.index = 0;
+    this.index = this.info.length - 1; // the index of our default sprite.
     this.reset();
 }
 
