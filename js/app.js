@@ -15,11 +15,11 @@ ScoreBoard.LivesPositionX = 5;
 ScoreBoard.LivesPositionY = -6;
 ScoreBoard.ScorePositionX = 500;
 ScoreBoard.ScorePositionY = 60;
-ScoreBoard.LivesSprite = 'images/char-boy.png';
+ScoreBoard.Sprite = 'images/char-boy.png';
 
 // Pseudoclass methods.
 ScoreBoard.prototype.init = function() {
-    this.livesSprite = ScoreBoard.LivesSprite;
+    this.sprite = ScoreBoard.Sprite;
     this.reset();
 }
 
@@ -42,8 +42,8 @@ ScoreBoard.prototype.addPoints = function(points) {
     this.points += points;
 }
 
-ScoreBoard.prototype.setLivesSprite = function(sprite) {
-    this.livesSprite = sprite;
+ScoreBoard.prototype.setSprite = function(sprite) {
+    this.sprite = sprite;
 }
 
 ScoreBoard.prototype.setGutterMessage = function(message) {
@@ -64,7 +64,7 @@ ScoreBoard.prototype.render = function(score) {
     ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, topBuffer + ScoreBoard.Height);
 
     // Render remaining lives icons.
-    var image = Resources.get(this.livesSprite);
+    var image = Resources.get(this.sprite);
     var width = image.width * 0.5;
     var height = image.height * 0.5;
     for (i = 0; i < this.remainingLives; ++i) {
@@ -259,9 +259,9 @@ function RenderableItem(id, x, y, sprite) {
 // Pseudoclass methods.
 RenderableItem.prototype.render = function(width, height) {
     if (width == null && height == null) {
-        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y);
+        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y); // natural size
     } else {
-        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height);
+        ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height); // scaled
     }
 }
 
@@ -319,12 +319,12 @@ function Enemy(id) {
     InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-red.png');
 
     // Build sprite array.
-    this.enemyInfo = [
-        { sprite: 'images/enemy-green.png', charm: 'images/charm-green.png' },
-        { sprite: 'images/enemy-blue.png', charm: 'images/charm-blue.png' },
-        { sprite: 'images/enemy-yellow.png', charm: 'images/charm-yellow.png' },
-        { sprite: 'images/enemy-purple.png', charm: 'images/charm-purple.png' },
-        { sprite: 'images/enemy-red.png', charm: 'images/charm-red.png' }
+    this.info = [
+        { sprite: 'images/enemy-green.png', charm: 'images/charm-green.png', points: 200 },
+        { sprite: 'images/enemy-blue.png', charm: 'images/charm-blue.png', points: 400 },
+        { sprite: 'images/enemy-yellow.png', charm: 'images/charm-yellow.png', points: 600 },
+        { sprite: 'images/enemy-purple.png', charm: 'images/charm-purple.png', points: 800 },
+        { sprite: 'images/enemy-red.png', charm: 'images/charm-red.png', points: 1000 }
     ];
 
     this.init();
@@ -354,13 +354,13 @@ Enemy.prototype.init = function() {
     this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
 
     this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
-    this.spriteIndex = this.getIndex();
 
-    // Index determines:
-    //  - the sprite by indexing into the playerInfo array, and
-    //  - which player can make it a zombie; i.e. the player
-    //    with the same index value.
-    this.sprite = this.enemyInfo[this.spriteIndex].sprite;
+    // The enemy's speed determines:
+    //   - the color of the sprite that's assigned,
+    //   - the points awarded to a player when the enemy is turned
+    //     into a zombie (more points are awarded for faster enemies).
+    this.index = this.getIndex();
+    this.sprite = this.info[this.index].sprite;
 
     this.zombieCounter = Enemy.ZombieLifetime;
     this.zombie = false;
@@ -380,12 +380,12 @@ Enemy.prototype.render = function() {
 }
 
 Enemy.prototype.getCharmSprite = function() {
-    return this.enemyInfo[this.spriteIndex].charm;
+    return this.info[this.index].charm;
 }
 
 Enemy.prototype.getIndex = function() {
-    //this.spriteIndex = (this.speed - Enemy.MinSpeed) /
-    //    ((Enemy.MaxSpeed - Enemy.MinSpeed) / this.playerInfo.length);
+    //this.index = (this.speed - Enemy.MinSpeed) /
+    //    ((Enemy.MaxSpeed - Enemy.MinSpeed) / this.info.length);
     if (this.speed < 120) {
         return 0;
     }
@@ -471,7 +471,7 @@ Player.DefaultSprite = 'images/char-boy.png';
 // Pseudoclass methods.
 Player.prototype.init = function() {
     // Build sprite array.
-    this.playerInfo = [
+    this.info = [
         { sprite: 'images/char-cat-girl.png' },
         { sprite: 'images/char-pink-girl.png' },
         { sprite: 'images/char-princess-girl.png' },
@@ -479,7 +479,7 @@ Player.prototype.init = function() {
         { sprite: 'images/char-boy.png' }
     ];
 
-    this.spriteIndex = 0;
+    this.index = 0;
     this.reset();
 }
 
@@ -513,14 +513,20 @@ Player.prototype.update = function() {
 // Determine if the player is touching any enemy.
 Player.prototype.detectEnemyCollisions = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
-        if (this.overlapsWith(allEnemies[i])) {
-            if (this.spriteIndex != allEnemies[i].spriteIndex) {
+        var enemy = allEnemies[i];
+        if (this.overlapsWith(enemy)) {
+            if (this.index != enemy.index) {
+                // Enemy kills player.
                 scoreBoard.removeLife();
                 gameBoard.playSound(gameBoard.sounds.collision);
                 this.reset();
                 break;
             } else {
-                allEnemies[i].zombie = true; // watch out!
+                // Player kills enemy; enemy becomes the walking dead.
+                if (!enemy.zombie) {
+                    enemy.zombie = true;
+                    scoreBoard.addPoints(enemy.info[enemy.index].points);
+                }
             }
         }
     }
@@ -593,25 +599,25 @@ Player.prototype.moveDown = function() {
 }
 
 Player.prototype.getDefaultPlayerSprite = function() {
-    return this.playerInfo[0].sprite;
+    return this.info[0].sprite;
 }
 
 Player.prototype.setNextSprite = function() {
-    this.spriteIndex++;
-    if (this.spriteIndex > (this.playerInfo.length - 1)) {
-        this.spriteIndex = 0;
+    this.index++;
+    if (this.index > (this.info.length - 1)) {
+        this.index = 0;
     }
-    this.setSprite(this.playerInfo[this.spriteIndex].sprite);
-    scoreBoard.setLivesSprite(this.playerInfo[this.spriteIndex].sprite);
+    this.setSprite(this.info[this.index].sprite);
+    scoreBoard.setSprite(this.info[this.index].sprite);
 }
 
 Player.prototype.setPreviousSprite = function() {
-    this.spriteIndex--;
-    if (this.spriteIndex < 0) {
-        this.spriteIndex = this.playerInfo.length - 1;
+    this.index--;
+    if (this.index < 0) {
+        this.index = this.info.length - 1;
     }
-    this.setSprite(this.playerInfo[this.spriteIndex].sprite);
-    scoreBoard.setLivesSprite(this.playerInfo[this.spriteIndex].sprite);
+    this.setSprite(this.info[this.index].sprite);
+    scoreBoard.setSprite(this.info[this.index].sprite);
 }
 
 Player.prototype.IsActive = function() {
