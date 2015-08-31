@@ -345,6 +345,10 @@ Enemy.MaxSpeed = 300;
 
 Enemy.OffsetY = -18; // to vertically center an enemy in their row.
 
+// The +/- variation from the exact center of a tile column that
+// defines an acceptable range for charms to be dropped.
+Enemy.ColumnTolerance = GameBoard.TileWidth * 0.01;
+
 // Pseudoclass methods.
 Enemy.prototype.init = function() {
     this.row = gameBoard.getRandomEnemyRow();
@@ -352,10 +356,9 @@ Enemy.prototype.init = function() {
     this.y = gameBoard.getYFromRow(this.row, Enemy.OffsetY);
 
     this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
-
     this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
 
-    // The enemy's speed determines:
+    // The enemy speed determines:
     //   - the color of the sprite that's assigned,
     //   - the points awarded to a player when the enemy is turned
     //     into a zombie (more points are awarded for faster enemies).
@@ -417,11 +420,9 @@ Enemy.prototype.centeredInTile = function() {
 
     var offset = 10;
     var columnCenter = GameBoard.TileWidth / 2 - offset;
-    var toleranceFactor = GameBoard.TileWidth * 0.01; // 1%
     var columnPosition = Math.floor(this.x % GameBoard.TileWidth);
-
-    if (columnPosition <= (columnCenter - toleranceFactor) ||
-        columnPosition >= (columnCenter + toleranceFactor)) {
+    if (columnPosition <= (columnCenter - Enemy.ColumnTolerance) ||
+        columnPosition >= (columnCenter + Enemy.ColumnTolerance)) {
         return false; // off center.
     }
 
