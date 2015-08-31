@@ -374,7 +374,7 @@ Enemy.prototype.render = function() {
         ctx.globalAlpha = this.zombieCounter / Enemy.ZombieLifetime;
         InteractiveItem.prototype.render.call(this);
         ctx.globalAlpha = 1;
-        if (this.zombieCounter > 0) {
+        if (!gameBoard.paused && this.zombieCounter > 0) {
             this.zombieCounter--;
         }
     } else {
