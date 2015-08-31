@@ -429,8 +429,7 @@ Enemy.prototype.centeredInTile = function() {
 }
 
 // Update the enemy's position, required method for game.
-// Parameter: dt, a time delta between ticks. We multiply movement by the
-// dt parameter which ensures the game runs at the same speed for all computers.
+// Parameter: dt, a time delta between ticks.
 Enemy.prototype.update = function(dt) {
     if (gameBoard.paused) {
         return;
@@ -439,8 +438,10 @@ Enemy.prototype.update = function(dt) {
     if (this.delay > 0) {
         this.delay--;
     } else {
+        // Multiply movement by the dt parameter. This ensures the
+        // game runs at the same speed for all computers.
         this.x += (this.speed * dt);
-        if (this.x > ctx.canvas.width) {
+        if (this.x > ctx.canvas.width || this.zombieCounter === 0) {
             this.init(); // for next run.
         }
     }
@@ -514,7 +515,7 @@ Player.prototype.update = function() {
 Player.prototype.detectEnemyCollisions = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
         var enemy = allEnemies[i];
-        if (this.overlapsWith(enemy)) {
+        if (!enemy.zombie && this.overlapsWith(enemy)) {
             if (this.index != enemy.index) {
                 // Enemy kills player.
                 scoreBoard.removeLife();
