@@ -124,8 +124,8 @@ function GameBoard(rows, columns) {
 
     this.sounds = {
         collision: 'sounds/hit.wav',
-        charmdrop: 'sounds/thud.wav',
-        charmpickup: 'sounds/pop.wav'
+        charmdrop: 'sounds/pop.wav',
+        charmpickup: 'sounds/thud.wav'
     }
 
     this.reset();
