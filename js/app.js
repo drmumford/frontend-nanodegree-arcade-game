@@ -15,9 +15,9 @@ ScoreBoard.LivesPositionX = 5;
 ScoreBoard.LivesPositionY = -6;
 ScoreBoard.ScorePositionX = 500;
 ScoreBoard.ScorePositionY = 60;
-ScoreBoard.TitleFont = "20px Luckiest Guy";
-ScoreBoard.ScoreFont = "40px Luckiest Guy";
-ScoreBoard.GutterMsgFont =  "25px Luckiest Guy";
+ScoreBoard.TitleFont = '20px Luckiest Guy';
+ScoreBoard.ScoreFont = '40px Luckiest Guy';
+ScoreBoard.GutterMsgFont = '25px Luckiest Guy';
 ScoreBoard.Sprite = 'images/char-boy.png';
 
 // Pseudoclass methods.
@@ -63,7 +63,7 @@ ScoreBoard.prototype.update = function() {
 
 ScoreBoard.prototype.render = function(score) {
     // Overwrite existing scoreboard.
-    ctx.fillStyle = "#ffd800";
+    ctx.fillStyle = '#ffd800';
     ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, topBuffer + ScoreBoard.Height);
 
     // Render remaining lives icons.
@@ -75,18 +75,18 @@ ScoreBoard.prototype.render = function(score) {
     }
 
     // Render remaining lives title.
-    ctx.fillStyle = "black";
+    ctx.fillStyle = 'black';
     ctx.font = ScoreBoard.TitleFont;
-    ctx.textAlign = "left";
-    ctx.fillText("Remaining Lives", ScoreBoard.LivesPositionX, ScoreBoard.TitleTextY);
+    ctx.textAlign = 'left';
+    ctx.fillText('Remaining Lives', ScoreBoard.LivesPositionX, ScoreBoard.TitleTextY);
 
     // Render remaining time and score title.
-    ctx.textAlign = "right";
-    ctx.fillText("Remaining Time / Score", ScoreBoard.ScorePositionX, ScoreBoard.TitleTextY);
+    ctx.textAlign = 'right';
+    ctx.fillText('Remaining Time / Score', ScoreBoard.ScorePositionX, ScoreBoard.TitleTextY);
 
     // Render the remaining time and score.
     ctx.font = ScoreBoard.ScoreFont;
-    ctx.fillText(gameBoard.remainingTime + " / " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
+    ctx.fillText(gameBoard.remainingTime + ' / ' + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
 
     this.renderGutterMessage();
     this.points = 0;
@@ -94,9 +94,9 @@ ScoreBoard.prototype.render = function(score) {
 
 ScoreBoard.prototype.renderGutterMessage = function() {
     if (this.gutterMessage != null) {
-        ctx.fillStyle = "black";
+        ctx.fillStyle = 'black';
         ctx.font = ScoreBoard.GutterMsgFont;
-        ctx.textAlign = "center";
+        ctx.textAlign = 'center';
         ctx.fillText(this.gutterMessage,
             GameBoard.TileWidth / 2 + gameBoard.getWidth() / 2,
             GameBoard.TileHeight / 2 + gameBoard.getHeight());
@@ -119,12 +119,13 @@ function GameBoard(rows, columns) {
     this.showHelp = false;
     this.gameMode = false;
     this.paused = false;
+    this.resumeGame = false;
     this.gameOver = false;
 
     this.sounds = {
-        collision: "sounds/hit.wav",
-        charmdrop: "sounds/thud.wav",
-        charmpickup: "sounds/pop.wav"
+        collision: 'sounds/hit.wav',
+        charmdrop: 'sounds/thud.wav',
+        charmpickup: 'sounds/pop.wav'
     }
 
     this.reset();
@@ -155,22 +156,24 @@ GameBoard.prototype.reset = function() {
 }
 
 GameBoard.prototype.update = function() {
-
     // Show the current help screen.
     if (this.showHelp) {
         gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.Id);
         hintsDialog.visible = (this.helpScreen == HintsDialog.Id);
         attributionDialog.visible = (this.helpScreen == AttributionDialog.Id);
-    } else {
+    }
+    else {
         this.hideHelpScreens();
     }
 
     if (this.demoMode) {
         gameOverDialog.visible = false;
-    } else { // Game Mode.
+    }
+    else { // Game Mode.
         if (this.paused) {
             this.stopwatch.stop(); // pause.
-        } else {
+        }
+        else {
             this.stopwatch.start(); // or resume / normal game play.
             this.remainingTime = GameBoard.GameDuration - this.stopwatch.seconds();
 
@@ -260,23 +263,29 @@ GameBoard.Random = function(lowLimit, highLimit) {
 
 GameBoard.prototype.handleInput = function(key, ctrlKey) {
     switch (key) {
-        case "left":
+        case 'left':
             this.showPreviousHelpScreen();
             break;
-        case "right":
+        case 'right':
             this.showNextHelpScreen();
             break;
-        case "esc":
+        case 'esc':
             // Close any open dialogs and start demo mode.
             if ((this.demoMode && this.showHelp) || (this.gameMode && this.gameOver)) {
                 this.startDemoMode();
                 scoreBoard.setGutterMessage('Hit the spacebar to play!');
             }
             break;
-        case "space":
+        case 'space':
             if (this.demoMode || (this.gameMode && this.gameOver)) {
                 this.startNewGame();
-            } else {
+            }
+            else if (this.resumeGame) {
+                this.showHelp = false;
+                this.paused = false;
+                this.resumeGame = false; // reset.
+            }
+            else {
                 this.paused = !this.paused; // pause or resume game.
             }
             break;
@@ -284,7 +293,7 @@ GameBoard.prototype.handleInput = function(key, ctrlKey) {
 }
 
 GameBoard.prototype.showPreviousHelpScreen = function() {
-    if (this.demoMode) {
+    if (this.demoMode || this.resumeGame) {
         this.helpScreen--;
         if (this.helpScreen < 0) {
             this.helpScreen = GameBoard.HelpScreens - 1;
@@ -293,7 +302,7 @@ GameBoard.prototype.showPreviousHelpScreen = function() {
 }
 
 GameBoard.prototype.showNextHelpScreen = function() {
-    if (this.demoMode) {
+    if (this.demoMode || this.resumeGame) {
         this.helpScreen++;
         if (this.helpScreen == GameBoard.HelpScreens) {
             this.helpScreen = 0;
@@ -323,7 +332,8 @@ function RenderableItem(id, x, y, sprite) {
 RenderableItem.prototype.render = function(width, height) {
     if (width == null && height == null) {
         ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y); // natural size
-    } else {
+    }
+    else {
         ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height); // scaled
     }
 }
@@ -440,7 +450,8 @@ Enemy.prototype.render = function() {
         if (!gameBoard.paused && this.zombieCounter > 0) {
             this.zombieCounter--;
         }
-    } else {
+    }
+    else {
         InteractiveItem.prototype.render.call(this);
     }
 }
@@ -491,7 +502,8 @@ Enemy.prototype.update = function(dt) {
 
     if (this.delay > 0) {
         this.delay--;
-    } else {
+    }
+    else {
         // Multiply movement by the dt parameter. This ensures the
         // game runs at the same speed for all computers.
         this.x += (this.speed * dt);
@@ -576,7 +588,8 @@ Player.prototype.detectEnemyCollisions = function() {
                 gameBoard.playSound(gameBoard.sounds.collision);
                 this.reset();
                 break;
-            } else {
+            }
+            else {
                 // Player kills enemy; enemy becomes the walking dead.
                 if (!enemy.zombie) {
                     enemy.zombie = true;
@@ -599,20 +612,23 @@ Player.prototype.detectCharmPickups = function() {
 
 Player.prototype.handleInput = function(key, ctrlKey) {
     // No qualifications on when the user can toggle players.
-    if (ctrlKey) {
-        if (key === 'up') {
-            this.setNextSprite();
-        } else if (key === 'down') {
-            this.setPreviousSprite();
-        }
-    } else if (gameBoard.gameMode && !gameBoard.paused) {
+    if (ctrlKey && key === 'up') {
+        this.setNextSprite();
+    }
+    else if (ctrlKey && key === 'down') {
+        this.setPreviousSprite();
+    }
+    else if (gameBoard.gameMode && !gameBoard.paused) {
         if (key === 'left') {
             this.moveLeft();
-        } else if (key === 'right') {
+        }
+        else if (key === 'right') {
             this.moveRight();
-        } else if (key === 'up') {
+        }
+        else if (key === 'up') {
             this.moveUp();
-        } else if (key === 'down') {
+        }
+        else if (key === 'down') {
             this.moveDown();
         }
     }
@@ -817,9 +833,9 @@ function Dialog() {
 
 // Pseudoclass properties.
 Dialog.LeftMargin = 0;
-Dialog.TitleFont = "64px Luckiest Guy";
-Dialog.NormalFont = "25px Luckiest Guy";
-Dialog.SmallFont = "20px Luckiest Guy";
+Dialog.TitleFont = '64px Luckiest Guy';
+Dialog.NormalFont = '25px Luckiest Guy';
+Dialog.SmallFont = '20px Luckiest Guy';
 Dialog.Bullet = String.fromCodePoint(0x2022);
 Dialog.Transparency = 0.83;
 
@@ -866,13 +882,13 @@ Dialog.prototype.hide = function() {
  * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
  */
 Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke) {
-    if (typeof stroke == "undefined") {
+    if (typeof stroke == 'undefined') {
         stroke = true;
     }
-    if (typeof radius === "undefined") {
+    if (typeof radius === 'undefined') {
         radius = 5;
     }
-    ctx.fillStyle = "black";
+    ctx.fillStyle = 'black';
     ctx.globalAlpha = Dialog.Transparency;
 
     ctx.beginPath();
@@ -929,43 +945,43 @@ GameRulesDialog.prototype.render = function() {
 GameRulesDialog.prototype.contents = function() {
     var y = this.y + 70;
 
-    ctx.fillStyle = "red";
-    ctx.textAlign = "center";
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
     ctx.font = Dialog.TitleFont;
-    ctx.fillText("Game Rules", this.midX, y);
+    ctx.fillText('Game Rules', this.midX, y);
 
-    ctx.textAlign = "left";
+    ctx.textAlign = 'left';
     ctx.font = Dialog.NormalFont;
 
     y += 50;
-    ctx.fillText(Dialog.Bullet + " Move the Player using the", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Move the Player using the', this.leftX, y);
     y += 30;
-    ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
+    ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y);
     y += 33;
-    ctx.fillText(Dialog.Bullet + " Avoid the ladybugs!", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y);
     y += 33;
-    ctx.fillText(Dialog.Bullet + " Get points for each second", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y);
     y += 30;
-    ctx.fillText("   the player is in-play (the grass", this.leftX, y);
+    ctx.fillText('   the player is in-play (the grass', this.leftX, y);
     y += 30;
-    ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
+    ctx.fillText('   area is NOT considered in-play)', this.leftX, y);
     y += 33;
-    ctx.fillText(Dialog.Bullet + " Get points for cleaning up", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y);
     y += 30;
-    ctx.fillText("   after the ladybugs", this.leftX, y);
+    ctx.fillText('   after the ladybugs', this.leftX, y);
     y += 33;
-    ctx.fillText(Dialog.Bullet + " Game is over when all lives", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y);
     y += 30;
-    ctx.fillText("   are used or the time is up", this.leftX, y);
+    ctx.fillText('   are used or the time is up', this.leftX, y);
     y += 33;
-    ctx.fillText(Dialog.Bullet + " Ctrl-up/down changes player", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
 
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
 
     y += 45;
-    ctx.fillText("Hit the space bar", this.midX, y);
+    ctx.fillText('Hit the space bar', this.midX, y);
     y += 30;
-    ctx.fillText("to play ...", this.midX, y);
+    ctx.fillText('to' + (gameBoard.resumeGame ? ' resume ' : ' ') + 'play ...', this.midX, y);
 }
 
 //---------------------------------
@@ -994,43 +1010,43 @@ HintsDialog.Id = 1;
 HintsDialog.prototype.contents = function() {
     var y = this.y + 70;
 
-    ctx.fillStyle = "red";
-    ctx.textAlign = "center";
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
     ctx.font = Dialog.TitleFont;
-    ctx.fillText("Game Hints", this.midX, y);
+    ctx.fillText('Game Hints', this.midX, y);
 
-    ctx.textAlign = "left";
+    ctx.textAlign = 'left';
     ctx.font = Dialog.NormalFont;
 
     y += 50;
-    ctx.fillText(Dialog.Bullet + " Oh, here's a good hint ...", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Oh, a good hint is ...', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
+    //ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Avoid the ladybugs!", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Get points for each second", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   the player is in-play (the grass", this.leftX, y);
+    //ctx.fillText('   the player is in-play (the grass', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
+    //ctx.fillText('   area is NOT considered in-play)', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Get points for cleaning up", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   after the ladybugs", this.leftX, y);
+    //ctx.fillText('   after the ladybugs', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Game is over when all lives", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   are used or the time is up", this.leftX, y);
+    //ctx.fillText('   are used or the time is up', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Ctrl-up/down changes player", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
 
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
 
     y += 45;
-    ctx.fillText("Hit the space bar", this.midX, y);
+    ctx.fillText('Hit the space bar', this.midX, y);
     y += 30;
-    ctx.fillText("to play ...", this.midX, y);
+    ctx.fillText('to play ...', this.midX, y);
 }
 
 //---------------------------------
@@ -1059,43 +1075,43 @@ AttributionDialog.Id = 2;
 AttributionDialog.prototype.contents = function() {
     var y = this.y + 70;
 
-    ctx.fillStyle = "red";
-    ctx.textAlign = "center";
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
     ctx.font = Dialog.TitleFont;
-    ctx.fillText("Attribution", this.midX, y);
+    ctx.fillText('Attribution', this.midX, y);
 
-    ctx.textAlign = "left";
+    ctx.textAlign = 'left';
     ctx.font = Dialog.NormalFont;
 
     y += 50;
-    ctx.fillText(Dialog.Bullet + " Some attribution type stuff ...", this.leftX, y);
+    ctx.fillText(Dialog.Bullet + ' Some attribution type stuff ...', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
+    //ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Avoid the ladybugs!", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Get points for each second", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   the player is in-play (the grass", this.leftX, y);
+    //ctx.fillText('   the player is in-play (the grass', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
+    //ctx.fillText('   area is NOT considered in-play)', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Get points for cleaning up", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   after the ladybugs", this.leftX, y);
+    //ctx.fillText('   after the ladybugs', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Game is over when all lives", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y);
     //y += 30;
-    //ctx.fillText("   are used or the time is up", this.leftX, y);
+    //ctx.fillText('   are used or the time is up', this.leftX, y);
     //y += 33;
-    //ctx.fillText(Dialog.Bullet + " Ctrl-up/down changes player", this.leftX, y);
+    //ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
 
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
 
     y += 45;
-    ctx.fillText("Hit the space bar", this.midX, y);
+    ctx.fillText('Hit the space bar', this.midX, y);
     y += 30;
-    ctx.fillText("to play ...", this.midX, y);
+    ctx.fillText('to play ...', this.midX, y);
 }
 
 //---------------------------------
@@ -1112,8 +1128,8 @@ GameOverDialog.prototype = Object.create(Dialog.prototype);
 GameOverDialog.prototype.constructor = GameOverDialog;
 
 // Pseudoclass properties.
-GameOverDialog.OuttaTimeReason = "Time";
-GameOverDialog.OuttaLivesReason = "Lives";
+GameOverDialog.OuttaTimeReason = 'Time';
+GameOverDialog.OuttaLivesReason = 'Lives';
 
 // Pseudoclass methods.
 GameOverDialog.prototype.setReason = function(reason) {
@@ -1123,23 +1139,23 @@ GameOverDialog.prototype.setReason = function(reason) {
 GameOverDialog.prototype.contents = function() {
     var y = this.y + 75;
 
-    ctx.fillStyle = "red";
-    ctx.textAlign = "center";
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
     ctx.font = Dialog.TitleFont;
-    ctx.fillText("Game Over!", this.midX, y);
+    ctx.fillText('Game Over!', this.midX, y);
 
     if (this.reason != null) {
         y += 30;
         ctx.font = Dialog.SmallFont;
-        ctx.fillText("(Outta " + this.reason + ")", this.midX, y);
+        ctx.fillText('(Outta ' + this.reason + ')', this.midX, y);
     }
 
     ctx.font = Dialog.NormalFont;
 
     y += 50;
-    ctx.fillText("Hit the space bar", this.midX, y);
+    ctx.fillText('Hit the space bar', this.midX, y);
     y += 30;
-    ctx.fillText("to play again ...", this.midX, y);
+    ctx.fillText('to play again ...', this.midX, y);
 }
 
 //---------------------------------
@@ -1149,16 +1165,10 @@ GameOverDialog.prototype.contents = function() {
 function showGameInfo() {
     if (gameBoard.demoMode) {
         gameBoard.showHelp = true;
-        return;
     }
-
-    if (gameBoard.gameMode && !gameBoard.gameOver) {
-        alert("this will kill your game");
-    }
-
-    if (gameBoard.gameMode && gameBoard.gameMode) {
-        gameBoard.startDemoMode();
+    else if (gameBoard.gameMode && (gameBoard.paused || gameBoard.gameOver)) {
         gameBoard.showHelp = true;
+        gameBoard.resumeGame = true;
     }
 }
 
@@ -1185,13 +1195,7 @@ var attributionDialog = new AttributionDialog();
 var gameOverDialog = new GameOverDialog();
 
 // Instantiate enemy objects.
-var allEnemies = [];
-allEnemies.push(new Enemy(0));
-allEnemies.push(new Enemy(1));
-allEnemies.push(new Enemy(2));
-allEnemies.push(new Enemy(3));
-allEnemies.push(new Enemy(4));
-allEnemies.push(new Enemy(5));
+var allEnemies = [new Enemy(0), new Enemy(1), new Enemy(2), new Enemy(3), new Enemy(4), new Enemy(5)];
 
 // Instantiate player objects.
 var player = new Player(0); // just one currently.
