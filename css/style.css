@@ -23,7 +23,7 @@ a:link {
 }
 
 a:hover {
-    color: purple;
+    color: blue;
     background-color: transparent;
     text-decoration: underline;
     cursor: pointer;
