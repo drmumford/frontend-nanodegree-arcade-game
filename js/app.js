@@ -9,7 +9,7 @@ function ScoreBoard() {
 
 // Pseudoclass properties.
 ScoreBoard.Height = 48;
-ScoreBoard.LivesPerGame = 5;
+ScoreBoard.LivesPerGame = 4;
 ScoreBoard.TitleTextY = 17;
 ScoreBoard.LivesPositionX = 5;
 ScoreBoard.LivesPositionY = -6;
