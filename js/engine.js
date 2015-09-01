@@ -108,6 +108,8 @@ var Engine = (function(global) {
         renderEntities();
         scoreBoard.render();
         gameRulesDialog.render();
+        hintsDialog.render();
+        attributionDialog.render();
         gameOverDialog.render();
     }
 

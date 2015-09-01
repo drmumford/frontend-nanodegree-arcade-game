@@ -10,11 +10,14 @@ function ScoreBoard() {
 // Pseudoclass properties.
 ScoreBoard.Height = 48;
 ScoreBoard.LivesPerGame = 5;
-ScoreBoard.TitleTextY = 15;
+ScoreBoard.TitleTextY = 17;
 ScoreBoard.LivesPositionX = 5;
 ScoreBoard.LivesPositionY = -6;
 ScoreBoard.ScorePositionX = 500;
 ScoreBoard.ScorePositionY = 60;
+ScoreBoard.TitleFont = "20px Luckiest Guy";
+ScoreBoard.ScoreFont = "40px Luckiest Guy";
+ScoreBoard.GutterMsgFont =  "25px Luckiest Guy";
 ScoreBoard.Sprite = 'images/char-boy.png';
 
 // Pseudoclass methods.
@@ -73,7 +76,7 @@ ScoreBoard.prototype.render = function(score) {
 
     // Render remaining lives title.
     ctx.fillStyle = "black";
-    ctx.font = "18px Luckiest Guy";
+    ctx.font = ScoreBoard.TitleFont;
     ctx.textAlign = "left";
     ctx.fillText("Remaining Lives", ScoreBoard.LivesPositionX, ScoreBoard.TitleTextY);
 
@@ -82,7 +85,7 @@ ScoreBoard.prototype.render = function(score) {
     ctx.fillText("Remaining Time / Score", ScoreBoard.ScorePositionX, ScoreBoard.TitleTextY);
 
     // Render the remaining time and score.
-    ctx.font = "40px Luckiest Guy";
+    ctx.font = ScoreBoard.ScoreFont;
     ctx.fillText(gameBoard.remainingTime + " / " + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
 
     this.renderGutterMessage();
@@ -92,7 +95,7 @@ ScoreBoard.prototype.render = function(score) {
 ScoreBoard.prototype.renderGutterMessage = function() {
     if (this.gutterMessage != null) {
         ctx.fillStyle = "black";
-        ctx.font = "25px Luckiest Guy";
+        ctx.font = ScoreBoard.GutterMsgFont;
         ctx.textAlign = "center";
         ctx.fillText(this.gutterMessage,
             GameBoard.TileWidth / 2 + gameBoard.getWidth() / 2,
@@ -109,6 +112,14 @@ function GameBoard(rows, columns) {
     this.rows = rows;
     this.columns = columns;
     this.stopwatch = new Stopwatch();
+    this.firstRun = true;
+
+    // State variables.
+    this.demoMode = false;
+    this.showHelp = false;
+    this.gameMode = false;
+    this.paused = false;
+    this.gameOver = false;
 
     this.sounds = {
         collision: "sounds/hit.wav",
@@ -125,31 +136,51 @@ GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0; // always.
 GameBoard.PointsPerSecond = 100; // only when the player is active.
 GameBoard.GameDuration = 120; // in seconds.
+GameBoard.HelpScreens = 3; // game instructions, hints, attribution.
 
 // Pseudoclass methods.
 GameBoard.prototype.reset = function() {
     this.stopwatch.reset();
     this.remainingTime = GameBoard.GameDuration;
-    this.paused = false;
     this.gameOver = false;
+    this.paused = false;
+    this.helpScreen = GameRulesDialog.Id; // start-up screen.
+    this.demoMode = this.firstRun;
+    this.showHelp = this.firstRun;
+    this.gameMode = !this.firstRun;
+
+    if (this.firstRun) {
+        this.firstRun = false; // show game info once.
+    }
 }
 
 GameBoard.prototype.update = function() {
-    if (this.paused) {
-        this.stopwatch.stop(); // pause.
-        return;
+
+    // Show the current help screen.
+    if (this.showHelp) {
+        gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.Id);
+        hintsDialog.visible = (this.helpScreen == HintsDialog.Id);
+        attributionDialog.visible = (this.helpScreen == AttributionDialog.Id);
+    } else {
+        this.hideHelpScreens();
     }
 
-    this.stopwatch.start();
-    this.remainingTime = GameBoard.GameDuration - this.stopwatch.seconds();
+    if (this.demoMode) {
+        gameOverDialog.visible = false;
+    } else { // Game Mode.
+        if (this.paused) {
+            this.stopwatch.stop(); // pause.
+        } else {
+            this.stopwatch.start(); // or resume / normal game play.
+            this.remainingTime = GameBoard.GameDuration - this.stopwatch.seconds();
 
-    // Determine if the game is over.
-    if (this.isGameOver()) {
-        this.paused = true;
-        this.gameOver = true;
-
-        gameRulesDialog.hide();
-        gameOverDialog.show();
+            // Determine if the game is over.
+            if (this.isGameOver()) {
+                this.paused = true;
+                this.gameOver = true;
+                gameOverDialog.show();
+            }
+        }
     }
 }
 
@@ -203,7 +234,9 @@ GameBoard.prototype.playSound = function(soundFile) {
 }
 
 GameBoard.prototype.startNewGame = function() {
+    this.hideHelpScreens();
     gameOverDialog.hide();
+
     scoreBoard.reset();
     gameBoard.reset();
     player.reset();
@@ -213,35 +246,65 @@ GameBoard.prototype.startNewGame = function() {
     }
 }
 
+GameBoard.prototype.startDemoMode = function() {
+    this.startNewGame();
+    this.gameMode = false;
+    this.demoMode = true;
+    this.showHelp = false;
+}
+
 // Generate a random number x, where lowLimit <= x <= highLimit.
 GameBoard.Random = function(lowLimit, highLimit) {
     return lowLimit + Math.floor(Math.random() * (highLimit - lowLimit + 1));
 }
 
 GameBoard.prototype.handleInput = function(key, ctrlKey) {
-    // Key inputs related to the game board.
     switch (key) {
+        case "left":
+            this.showPreviousHelpScreen();
+            break;
+        case "right":
+            this.showNextHelpScreen();
+            break;
         case "esc":
-            if (this.gameOver || this.paused) {
-                gameRulesDialog.hide();
-                gameOverDialog.hide();
-                scoreBoard.setGutterMessage("Hit the spacebar to play!");
+            // Close any open dialogs and start demo mode.
+            if ((this.demoMode && this.showHelp) || (this.gameMode && this.gameOver)) {
+                this.startDemoMode();
+                scoreBoard.setGutterMessage('Hit the spacebar to play!');
             }
             break;
-        case "space": // start or pause the game.
-            if (this.gameOver) {
+        case "space":
+            if (this.demoMode || (this.gameMode && this.gameOver)) {
                 this.startNewGame();
-            }
-            else {
-                gameRulesDialog.hide();
-                scoreBoard.setGutterMessage(null);
-                this.paused = !this.paused;
+            } else {
+                this.paused = !this.paused; // pause or resume game.
             }
             break;
-        default:
-            // All other inputs are handled by the player.
-            player.handleInput(key, ctrlKey);
     }
+}
+
+GameBoard.prototype.showPreviousHelpScreen = function() {
+    if (this.demoMode) {
+        this.helpScreen--;
+        if (this.helpScreen < 0) {
+            this.helpScreen = GameBoard.HelpScreens - 1;
+        }
+    }
+}
+
+GameBoard.prototype.showNextHelpScreen = function() {
+    if (this.demoMode) {
+        this.helpScreen++;
+        if (this.helpScreen == GameBoard.HelpScreens) {
+            this.helpScreen = 0;
+        }
+    }
+}
+
+GameBoard.prototype.hideHelpScreens = function() {
+    gameRulesDialog.hide();
+    hintsDialog.hide();
+    attributionDialog.hide();
 }
 
 //---------------------------------
@@ -387,20 +450,10 @@ Enemy.prototype.getCharmSprite = function() {
 }
 
 Enemy.prototype.getIndex = function() {
-    //this.index = (this.speed - Enemy.MinSpeed) /
-    //    ((Enemy.MaxSpeed - Enemy.MinSpeed) / this.info.length);
-    if (this.speed < 120) {
-        return 0;
-    }
-    if (this.speed < 165) {
-        return 1;
-    }
-    if (this.speed < 210) {
-        return 2;
-    }
-    if (this.speed < 255) {
-        return 3;
-    }
+    if (this.speed < 120) return 0;
+    if (this.speed < 165) return 1;
+    if (this.speed < 210) return 2;
+    if (this.speed < 255) return 3;
 
     return 4;
 }
@@ -545,48 +598,43 @@ Player.prototype.detectCharmPickups = function() {
 }
 
 Player.prototype.handleInput = function(key, ctrlKey) {
-    // Key inputs related to the player.
-    switch (key) {
-        case "left":
+    // No qualifications on when the user can toggle players.
+    if (ctrlKey) {
+        if (key === 'up') {
+            this.setNextSprite();
+        } else if (key === 'down') {
+            this.setPreviousSprite();
+        }
+    } else if (gameBoard.gameMode && !gameBoard.paused) {
+        if (key === 'left') {
             this.moveLeft();
-            break;
-        case "right":
+        } else if (key === 'right') {
             this.moveRight();
-            break;
-        case "up":
-            if (ctrlKey) {
-                this.setNextSprite();
-            } else {
-                this.moveUp();
-            }
-            break;
-        case "down":
-            if (ctrlKey) {
-                this.setPreviousSprite();
-            } else {
-                this.moveDown();
-            }
-            break;
+        } else if (key === 'up') {
+            this.moveUp();
+        } else if (key === 'down') {
+            this.moveDown();
+        }
     }
 }
 
 Player.prototype.moveLeft = function() {
     // If we're not in the far left column, then we can move left.
-    if (!gameBoard.paused && (this.x >= GameBoard.TileWidth)) {
+    if (this.x >= GameBoard.TileWidth) {
         this.x -= GameBoard.TileWidth;
     }
 }
 
 Player.prototype.moveRight = function() {
     // If we're not in the far right column, then we can move right.
-    if (!gameBoard.paused && ((this.x + GameBoard.TileWidth) < ctx.canvas.width)) {
+    if ((this.x + GameBoard.TileWidth) < ctx.canvas.width) {
         this.x += GameBoard.TileWidth;
     }
 }
 
 Player.prototype.moveUp = function() {
     // If we're not in the top row, then we can move up.
-    if (!gameBoard.paused && (this.row > GameBoard.TopRow)) {
+    if (this.row > GameBoard.TopRow) {
         this.row--;
         this.y -= GameBoard.TileHeight;
     }
@@ -594,14 +642,10 @@ Player.prototype.moveUp = function() {
 
 Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
-    if (!gameBoard.paused && (this.row < gameBoard.getBottomRow())) {
+    if (this.row < gameBoard.getBottomRow()) {
         this.row++;
         this.y += GameBoard.TileHeight;
     }
-}
-
-Player.prototype.getDefaultPlayerSprite = function() {
-    return this.info[0].sprite;
 }
 
 Player.prototype.setNextSprite = function() {
@@ -793,6 +837,13 @@ Dialog.prototype.init = function() {
     this.visible = false;
 }
 
+Dialog.prototype.render = function() {
+    if (this.visible) {
+        this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
+        this.contents();
+    }
+}
+
 Dialog.prototype.show = function() {
     this.visible = true;
 }
@@ -864,6 +915,9 @@ function GameRulesDialog() {
 GameRulesDialog.prototype = Object.create(Dialog.prototype);
 GameRulesDialog.prototype.constructor = GameRulesDialog;
 
+// Pseudoclass properties.
+GameRulesDialog.Id = 0;
+
 // Pseudoclass methods.
 GameRulesDialog.prototype.render = function() {
     if (this.visible) {
@@ -915,6 +969,136 @@ GameRulesDialog.prototype.contents = function() {
 }
 
 //---------------------------------
+// HintsDialog Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function HintsDialog() {
+    this.init();
+
+    var extraWidth = 88; // make this a constant.
+    this.width = this.width + extraWidth; // a bit wider than default.
+    this.height = this.height + 315; // a bit longer too.
+    this.x = this.x - (extraWidth / 2); // to keep centered.
+    this.y = this.y - 28;
+    this.visible = true; // shown on startup.
+}
+
+HintsDialog.prototype = Object.create(Dialog.prototype);
+HintsDialog.prototype.constructor = HintsDialog;
+
+// Pseudoclass properties.
+HintsDialog.Id = 1;
+
+// Pseudoclass methods.
+HintsDialog.prototype.contents = function() {
+    var y = this.y + 70;
+
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.font = Dialog.TitleFont;
+    ctx.fillText("Game Hints", this.midX, y);
+
+    ctx.textAlign = "left";
+    ctx.font = Dialog.NormalFont;
+
+    y += 50;
+    ctx.fillText(Dialog.Bullet + " Oh, here's a good hint ...", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Avoid the ladybugs!", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Get points for each second", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   the player is in-play (the grass", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Get points for cleaning up", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   after the ladybugs", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Game is over when all lives", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   are used or the time is up", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Ctrl-up/down changes player", this.leftX, y);
+
+    ctx.textAlign = "center";
+
+    y += 45;
+    ctx.fillText("Hit the space bar", this.midX, y);
+    y += 30;
+    ctx.fillText("to play ...", this.midX, y);
+}
+
+//---------------------------------
+// AttributionDialog Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function AttributionDialog() {
+    this.init();
+
+    var extraWidth = 88; // make this a constant.
+    this.width = this.width + extraWidth; // a bit wider than default.
+    this.height = this.height + 315; // a bit longer too.
+    this.x = this.x - (extraWidth / 2); // to keep centered.
+    this.y = this.y - 28;
+    this.visible = true; // shown on startup.
+}
+
+AttributionDialog.prototype = Object.create(Dialog.prototype);
+AttributionDialog.prototype.constructor = AttributionDialog;
+
+// Pseudoclass properties.
+AttributionDialog.Id = 2;
+
+// Pseudoclass methods.
+AttributionDialog.prototype.contents = function() {
+    var y = this.y + 70;
+
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.font = Dialog.TitleFont;
+    ctx.fillText("Attribution", this.midX, y);
+
+    ctx.textAlign = "left";
+    ctx.font = Dialog.NormalFont;
+
+    y += 50;
+    ctx.fillText(Dialog.Bullet + " Some attribution type stuff ...", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   arrow keys: up, down, left, right", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Avoid the ladybugs!", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Get points for each second", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   the player is in-play (the grass", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   area is NOT considered in-play)", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Get points for cleaning up", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   after the ladybugs", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Game is over when all lives", this.leftX, y);
+    //y += 30;
+    //ctx.fillText("   are used or the time is up", this.leftX, y);
+    //y += 33;
+    //ctx.fillText(Dialog.Bullet + " Ctrl-up/down changes player", this.leftX, y);
+
+    ctx.textAlign = "center";
+
+    y += 45;
+    ctx.fillText("Hit the space bar", this.midX, y);
+    y += 30;
+    ctx.fillText("to play ...", this.midX, y);
+}
+
+//---------------------------------
 // GameOverDialog Pseudoclass.
 //---------------------------------
 
@@ -934,13 +1118,6 @@ GameOverDialog.OuttaLivesReason = "Lives";
 // Pseudoclass methods.
 GameOverDialog.prototype.setReason = function(reason) {
     this.reason = reason;
-}
-
-GameOverDialog.prototype.render = function() {
-    if (this.visible) {
-        this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
-        this.contents();
-    }
 }
 
 GameOverDialog.prototype.contents = function() {
@@ -969,23 +1146,20 @@ GameOverDialog.prototype.contents = function() {
 // Global Helpers.
 //---------------------------------
 
-function showScreen(screen) {
-    var paused = gameBoard.paused;
-    if (!paused) {
-        gameBoard.paused = true;
+function showGameInfo() {
+    if (gameBoard.demoMode) {
+        gameBoard.showHelp = true;
+        return;
     }
 
-    switch (screen) {
-        case "Attribution":
-            alert("Hold tight, showing attribution will be implemented shortly ..."); //attributionDialog.show();
-            break;
-        case "Game Rules":
-            alert("Hold tight, showing the game rules will be implemented shortly ..."); //gameRulesDialog.show();
-            break;
-        default:
+    if (gameBoard.gameMode && !gameBoard.gameOver) {
+        alert("this will kill your game");
     }
 
-    gameBoard.paused = paused;
+    if (gameBoard.gameMode && gameBoard.gameMode) {
+        gameBoard.startDemoMode();
+        gameBoard.showHelp = true;
+    }
 }
 
 //---------------------------------
@@ -1000,6 +1174,12 @@ var gameBoard = new GameBoard(6, 5);
 
 // Instantiate our Game Rules dialog.
 var gameRulesDialog = new GameRulesDialog();
+
+// Instantiate our Game Hints dialog.
+var hintsDialog = new HintsDialog();
+
+// Instantiate our Attribution dialog.
+var attributionDialog = new AttributionDialog();
 
 // Instantiate our Game Over dialog.
 var gameOverDialog = new GameOverDialog();
@@ -1038,4 +1218,5 @@ document.addEventListener('keydown', function(e) {
     };
 
     gameBoard.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
+    player.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
 });
