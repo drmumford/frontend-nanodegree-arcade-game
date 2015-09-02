@@ -392,16 +392,16 @@ function Enemy(id) {
     var width = 101;
     var visibleWidth = 101;
     var startingXPosition = -GameBoard.TILE_WIDTH; // off-canvas.
-    var startingYPosition = 0; // dynamically determined.
+    var startingYPosition = 0; // row is dynamically determined.
     InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-red.png');
 
     // Build sprite array.
     this.info = [
-        { sprite: 'images/enemy-green.png', color: 'green', charm: 'images/charm-green.png', points:    Enemy.KILL_POINTS_GREEN  },
-        { sprite: 'images/enemy-blue.png', color: 'blue', charm: 'images/charm-blue.png', points:       Enemy.KILL_POINTS_BLUE   },
+        { sprite: 'images/enemy-green.png', color: 'green', charm: 'images/charm-green.png', points: Enemy.KILL_POINTS_GREEN },
+        { sprite: 'images/enemy-blue.png', color: 'blue', charm: 'images/charm-blue.png', points: Enemy.KILL_POINTS_BLUE },
         { sprite: 'images/enemy-yellow.png', color: 'yellow', charm: 'images/charm-yellow.png', points: Enemy.KILL_POINTS_YELLOW },
         { sprite: 'images/enemy-purple.png', color: 'purple', charm: 'images/charm-purple.png', points: Enemy.KILL_POINTS_PURPLE },
-        { sprite: 'images/enemy-red.png', color: 'red', charm: 'images/charm-red.png', points:          Enemy.KILL_POINTS_RED    }
+        { sprite: 'images/enemy-red.png', color: 'red', charm: 'images/charm-red.png', points: Enemy.KILL_POINTS_RED }
     ];
 
     this.init();
@@ -430,7 +430,7 @@ Enemy.KILL_POINTS_RED = 10000;
 
 // The +/- variation from the exact center of a tile column that
 // defines an acceptable range for charms to be dropped.
-Enemy.COLUMN_TOLERANCE = GameBoard.TILE_WIDTH * 0.01;
+Enemy.COLUMN_TOLERANCE = GameBoard.TILE_WIDTH * 0.1;
 
 // Pseudoclass methods.
 Enemy.prototype.init = function() {
@@ -492,15 +492,14 @@ Enemy.prototype.centeredInTile = function() {
         return false; // off-screen to the right.
     }
 
-    var offset = 10;
-    var columnCenter = GameBoard.TILE_WIDTH / 2 - offset;
+    var tileCenter = GameBoard.TILE_WIDTH / 2;
     var columnPosition = Math.floor(this.x % GameBoard.TILE_WIDTH);
-    if (columnPosition <= (columnCenter - Enemy.COLUMN_TOLERANCE) ||
-        columnPosition >= (columnCenter + Enemy.COLUMN_TOLERANCE)) {
+    if (columnPosition <= (tileCenter - Enemy.COLUMN_TOLERANCE) ||
+        columnPosition >= (tileCenter + Enemy.COLUMN_TOLERANCE)) {
         return false; // off center.
     }
 
-    return true; // enemy is centered in the column.
+    return true; // enemy is centered in the column within our tolerance.
 }
 
 // Update the enemy's position, required method for game.
@@ -714,7 +713,7 @@ Charm.prototype.constructor = Charm;
 Charm.WIDTH = 101;
 Charm.HEIGHT = 171;
 Charm.VISIBLE_WIDTH = 20;
-Charm.OFFSET_Y = 93;
+Charm.OFFSET_Y = 100;
 Charm.DEFAULT_POINTS = 5000;
 
 // Pseudoclass methods.
@@ -726,6 +725,7 @@ Charm.prototype.drop = function() {
             // (Re)Init the charm using the enemy's properties.
             this.x = enemy.x;
             this.y = enemy.y + Charm.OFFSET_Y;
+            this.y += GameBoard.Random(0, 20) * -GameBoard.Random(0, 1); // put some random variation in y too.
             this.row = gameBoard.getRowFromY(enemy.y, Enemy.OFFSET_Y);
             this.sprite = enemy.getCharmSprite();
             this.visible = true;
@@ -1030,11 +1030,11 @@ HintsDialog.prototype.contents = function() {
     ctx.fillText(Dialog.BULLET + ' Play wisely! Points for ...', this.leftX, y += 40);
     ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 30);
     ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 30);
-    ctx.fillText('   Defeating Green Enemy - ' +  Enemy.KILL_POINTS_GREEN, this.leftX, y += 30);
-    ctx.fillText('   Defeating Blue Enemy - ' +   Enemy.KILL_POINTS_BLUE, this.leftX, y += 30);
+    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KILL_POINTS_GREEN, this.leftX, y += 30);
+    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KILL_POINTS_BLUE, this.leftX, y += 30);
     ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 30);
     ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 30);
-    ctx.fillText('   Defeating Red Enemy - ' +    Enemy.KILL_POINTS_RED, this.leftX, y += 30);
+    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 30);
     this.startResumeGameText(y);
 }
 
