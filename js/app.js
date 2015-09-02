@@ -913,15 +913,16 @@ Dialog.prototype.startResumeGameText = function(y, again) {
 // Boolean - stroke Whether to stroke the rectangle. Defaults to true.
 // This method is based on this StackOverflow answer
 // http://stackoverflow.com/a/3368118/229858 by Juan Mendes
-Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke) {
+Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke, alpha, color) {
     if (typeof stroke == 'undefined') {
         stroke = true;
     }
     if (typeof radius === 'undefined') {
         radius = 5;
     }
-    ctx.fillStyle = 'black';
-    ctx.globalAlpha = Dialog.ALPHA;
+
+    ctx.fillStyle = color || 'black';
+    ctx.globalAlpha = alpha || Dialog.ALPHA;
 
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -967,13 +968,6 @@ GameRulesDialog.prototype.constructor = GameRulesDialog;
 GameRulesDialog.ID = 0;
 
 // Pseudoclass methods.
-GameRulesDialog.prototype.render = function() {
-    if (this.visible) {
-        this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
-        this.contents();
-    }
-}
-
 GameRulesDialog.prototype.contents = function() {
     var y = this.y + 70;
     this.titleText('Game Rules ' + Dialog.RIGHT_ICON, this.midX, y);
@@ -1064,14 +1058,25 @@ AttributionDialog.ID = 2;
 // Pseudoclass methods.
 AttributionDialog.prototype.contents = function() {
     var y = this.y + 70;
-    this.titleText('Attribution', this.midX, y);
+    var x = -35;
+    this.titleText(Dialog.LEFT_ICON + ' Attribution', this.midX, y);
 
     ctx.font = Dialog.NORMAL_FONT;
 
     ctx.textAlign = 'left';
-    ctx.fillText(Dialog.BULLET + ' Some attribution type stuff ...', this.leftX, y += 50);
+    ctx.fillText(Dialog.BULLET + ' Original Artwork design by', this.leftX, y += 40);
+    ctx.fillText('   Daniel Cook (Lostgarden.com)', this.leftX, y += 27);
+    ctx.fillText('   Stone & Grass Tiles', this.leftX, y += 30);
+    ctx.fillText('   Red Enemy & Red Player', this.leftX, y += 30);
+    ctx.fillText('   Green, Blue and Yellow Players', this.leftX, y += 30);
 
-    // TODO
+    ctx.fillText(Dialog.BULLET + ' Additional colors for Enemies', this.leftX, y += 40);
+    ctx.fillText('   by Cheryl Court (cherylcourt.ca)', this.leftX, y += 27);
+    ctx.fillText('   Green, Blue, Yellow & Purple', this.leftX, y += 27);
+
+    ctx.fillText(Dialog.BULLET + ' Artwork by David Mumford', this.leftX, y += 40);
+    ctx.fillText('   All Ladybug Charms', this.leftX, y += 27);
+    ctx.fillText('   Modifications to Purple Player', this.leftX, y += 27);
 
     this.startResumeGameText(y);
 }
