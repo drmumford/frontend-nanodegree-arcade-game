@@ -178,6 +178,7 @@ GameBoard.prototype.update = function() {
             if (this.isGameOver()) {
                 this.paused = true;
                 this.gameOver = true;
+                this.resumeGame = false;
                 gameOverDialog.show();
             }
         }
@@ -290,7 +291,7 @@ GameBoard.prototype.handleInput = function(key, ctrlKey) {
 }
 
 GameBoard.prototype.showPreviousHelpScreen = function() {
-    if (this.demoMode || this.resumeGame) {
+    if (this.showHelp) {
         this.helpScreen--;
         if (this.helpScreen < 0) {
             this.helpScreen = GameBoard.HELP_SCREENS - 1;
@@ -299,7 +300,7 @@ GameBoard.prototype.showPreviousHelpScreen = function() {
 }
 
 GameBoard.prototype.showNextHelpScreen = function() {
-    if (this.demoMode || this.resumeGame) {
+    if (this.showHelp) {
         this.helpScreen++;
         if (this.helpScreen == GameBoard.HELP_SCREENS) {
             this.helpScreen = 0;
@@ -1121,7 +1122,7 @@ function showGameInfo() {
     }
     else if (gameBoard.gameMode && (gameBoard.paused || gameBoard.gameOver)) {
         gameBoard.showHelp = true;
-        gameBoard.resumeGame = true;
+        gameBoard.resumeGame = !gameBoard.gameOver;
     }
 }
 
