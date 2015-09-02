@@ -110,6 +110,7 @@ var Engine = (function(global) {
         gameRulesDialog.render();
         hintsDialog.render();
         attributionDialog.render();
+        attributionSoundsDialog.render();
         gameOverDialog.render();
     }
 

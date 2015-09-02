@@ -136,7 +136,7 @@ GameBoard.TILE_HEIGHT = 83;
 GameBoard.TOP_ROW = 0;
 GameBoard.POINTS_PER_SECOND = 1000; // only when the player is active.
 GameBoard.GAME_DURATION = 120; // in seconds.
-GameBoard.HELP_SCREENS = 3; // game instructions, hints, attribution.
+GameBoard.HELP_SCREENS = 4; // game instructions, hints, art attribution, sound attribution
 
 // Pseudoclass methods.
 GameBoard.prototype.reset = function() {
@@ -313,12 +313,14 @@ GameBoard.prototype.showHelpScreen = function() {
     gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.ID);
     hintsDialog.visible = (this.helpScreen == HintsDialog.ID);
     attributionDialog.visible = (this.helpScreen == AttributionDialog.ID);
+    attributionSoundsDialog.visible = (this.helpScreen == AttributionSoundsDialog.ID);
 }
 
 GameBoard.prototype.hideHelpScreens = function() {
     gameRulesDialog.hide();
     hintsDialog.hide();
     attributionDialog.hide();
+    attributionSoundsDialog.hide();
 }
 
 //---------------------------------
@@ -847,7 +849,7 @@ Dialog.LEFT_MARGIN = 0;
 Dialog.TITLE_FONT = '64px Luckiest Guy';
 Dialog.NORMAL_FONT = '25px Luckiest Guy';
 Dialog.SMALL_FONT = '20px Luckiest Guy';
-Dialog.BULLET = String.fromCodePoint(0x2022);
+Dialog.BULLET = String.fromCodePoint(0x2022); // •
 Dialog.LEFT_ICON = String.fromCodePoint(0x2039); // ‹
 Dialog.RIGHT_ICON = String.fromCodePoint(0x203A); // ›
 Dialog.ALPHA = 0.83;
@@ -958,7 +960,6 @@ function GameRulesDialog() {
     this.height = this.height + 315; // a bit longer too.
     this.x = this.x - (extraWidth / 2); // to keep centered.
     this.y = this.y - 28;
-    this.visible = true; // shown on startup.
 }
 
 GameRulesDialog.prototype = Object.create(Dialog.prototype);
@@ -1002,7 +1003,6 @@ function HintsDialog() {
     this.height = this.height + 315; // a bit longer too.
     this.x = this.x - (extraWidth / 2); // to keep centered.
     this.y = this.y - 28;
-    this.visible = true; // shown on startup.
 }
 
 HintsDialog.prototype = Object.create(Dialog.prototype);
@@ -1023,14 +1023,14 @@ HintsDialog.prototype.contents = function() {
     ctx.fillText('   reveal each characters power', this.leftX, y += 27);
     ctx.fillText('   to defeat certain enemies', this.leftX, y += 27);
     ctx.fillText(Dialog.BULLET + ' Play wisely! Points for ...', this.leftX, y += 40);
-    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 30);
-    ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 30);
-    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KILL_POINTS_GREEN, this.leftX, y += 30);
-    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KILL_POINTS_BLUE, this.leftX, y += 30);
-    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 30);
-    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 30);
-    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 30);
-    this.startResumeGameText(y);
+    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 27);
+    ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 27);
+    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KILL_POINTS_GREEN, this.leftX, y += 27);
+    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KILL_POINTS_BLUE, this.leftX, y += 27);
+    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 27);
+    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 27);
+    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 27);
+    this.startResumeGameText(y += 22);
 }
 
 //---------------------------------
@@ -1046,7 +1046,6 @@ function AttributionDialog() {
     this.height = this.height + 315; // a bit longer too.
     this.x = this.x - (extraWidth / 2); // to keep centered.
     this.y = this.y - 28;
-    this.visible = true; // shown on startup.
 }
 
 AttributionDialog.prototype = Object.create(Dialog.prototype);
@@ -1059,7 +1058,7 @@ AttributionDialog.ID = 2;
 AttributionDialog.prototype.contents = function() {
     var y = this.y + 70;
     var x = -35;
-    this.titleText(Dialog.LEFT_ICON + ' Attribution', this.midX, y);
+    this.titleText(Dialog.LEFT_ICON + ' Attribution' + Dialog.RIGHT_ICON, this.midX, y);
 
     ctx.font = Dialog.NORMAL_FONT;
 
@@ -1068,7 +1067,7 @@ AttributionDialog.prototype.contents = function() {
     ctx.fillText('   Daniel Cook (Lostgarden.com)', this.leftX, y += 27);
     ctx.fillText('   Stone & Grass Tiles', this.leftX, y += 30);
     ctx.fillText('   Red Enemy & Red Player', this.leftX, y += 30);
-    ctx.fillText('   Green, Blue and Yellow Players', this.leftX, y += 30);
+    ctx.fillText('   Green, Blue & Yellow Players', this.leftX, y += 30);
 
     ctx.fillText(Dialog.BULLET + ' Additional colors for Enemies', this.leftX, y += 40);
     ctx.fillText('   by Cheryl Court (cherylcourt.ca)', this.leftX, y += 27);
@@ -1079,6 +1078,51 @@ AttributionDialog.prototype.contents = function() {
     ctx.fillText('   Modifications to Purple Player', this.leftX, y += 27);
 
     this.startResumeGameText(y);
+}
+
+//---------------------------------
+// AttributionSoundsDialog Pseudoclass.
+//---------------------------------
+
+// Constructor.
+function AttributionSoundsDialog() {
+    this.init();
+
+    var extraWidth = 88; // make this a constant.
+    this.width = this.width + extraWidth; // a bit wider than default.
+    this.height = this.height + 315; // a bit longer too.
+    this.x = this.x - (extraWidth / 2); // to keep centered.
+    this.y = this.y - 28;
+}
+
+AttributionSoundsDialog.prototype = Object.create(Dialog.prototype);
+AttributionSoundsDialog.prototype.constructor = AttributionSoundsDialog;
+
+// Pseudoclass properties.
+AttributionSoundsDialog.ID = 3;
+
+// Pseudoclass methods.
+AttributionSoundsDialog.prototype.contents = function() {
+    var y = this.y + 70;
+    var x = -35;
+    this.titleText(Dialog.LEFT_ICON + ' Attribution', this.midX, y);
+
+    ctx.font = Dialog.NORMAL_FONT;
+
+    ctx.textAlign = 'left';
+    ctx.fillText(Dialog.BULLET + ' All sounds obtained from', this.leftX, y += 40);
+    ctx.fillText('   freesound.org - CC BY 3.0 License', this.leftX, y += 27);
+
+    ctx.fillText(Dialog.BULLET + ' Enemy/Player Collisions by', this.leftX, y += 40);
+    ctx.fillText('   Leviclasssen, hit_002.wav.', this.leftX, y += 27);
+
+    ctx.fillText(Dialog.BULLET + ' Ladybug Charm drops by ', this.leftX, y += 40);
+    ctx.fillText('    Yottasounds, pop.wav.', this.leftX, y += 27);
+
+    ctx.fillText(Dialog.BULLET + ' Ladybug Charm pickups by ', this.leftX, y += 40);
+    ctx.fillText('    EdgardEdition, thud6.wav.', this.leftX, y += 27);
+
+    this.startResumeGameText(y += 77);
 }
 
 //---------------------------------
@@ -1147,8 +1191,11 @@ var gameRulesDialog = new GameRulesDialog();
 // Instantiate our Game Hints dialog.
 var hintsDialog = new HintsDialog();
 
-// Instantiate our Attribution dialog.
+// Instantiate our Attribution (Artwork) dialog.
 var attributionDialog = new AttributionDialog();
+
+// Instantiate our Attribution (Sounds) dialog.
+var attributionSoundsDialog = new AttributionSoundsDialog();
 
 // Instantiate our Game Over dialog.
 var gameOverDialog = new GameOverDialog();
