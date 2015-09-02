@@ -900,19 +900,19 @@ Dialog.prototype.startResumeGameText = function(y, again) {
         (again ? ' again ' : ' ') + '...', this.midX, y += 27);
 }
 
-/**
- * Draws a rounded rectangle using the current state of the canvas.
- * If you omit the last three params, it will draw a rectangle
- * outline with a 5 pixel border radius
- * @param {CanvasRenderingContext2D} ctx
- * @param {Number} x The top left x coordinate
- * @param {Number} y The top left y coordinate
- * @param {Number} width The width of the rectangle
- * @param {Number} height The height of the rectangle
- * @param {Number} radius The corner radius. Defaults to 5;
- * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
- * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
- */
+// Draws a rounded rectangle using the current state of the canvas.
+// If you omit the last three params, it will draw a rectangle
+// outline with a 5 pixel border radius.
+// CanvasRenderingContext2D - The ctx.
+// Number - x The top left x coordinate
+// Number - y The top left y coordinate
+// Number - width The width of the rectangle
+// Number - height The height of the rectangle
+// Number - radius The corner radius. Defaults to 5;
+// Boolean - fill Whether to fill the rectangle. Defaults to false.
+// Boolean - stroke Whether to stroke the rectangle. Defaults to true.
+// This method is based on this StackOverflow answer
+// http://stackoverflow.com/a/3368118/229858 by Juan Mendes
 Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke) {
     if (typeof stroke == 'undefined') {
         stroke = true;
