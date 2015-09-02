@@ -8,26 +8,25 @@ function ScoreBoard() {
 };
 
 // Pseudoclass properties.
-ScoreBoard.Height = 48;
-ScoreBoard.TitleTextY = 17;
-ScoreBoard.LivesPositionX = 5;
-ScoreBoard.LivesPositionY = -6;
-ScoreBoard.ScorePositionX = 500;
-ScoreBoard.ScorePositionY = 60;
-ScoreBoard.TitleFont = '20px Luckiest Guy';
-ScoreBoard.ScoreFont = '40px Luckiest Guy';
-ScoreBoard.GutterMsgFont = '25px Luckiest Guy';
-ScoreBoard.Sprite = 'images/char-boy.png';
+ScoreBoard.HEIGHT = 48;
+ScoreBoard.TITLE_TEXT_Y = 17;
+ScoreBoard.LIVES_POSITION_X = 5;
+ScoreBoard.LIVES_POSITION_Y = -6;
+ScoreBoard.SCORE_POSITION_X = 500;
+ScoreBoard.SCORE_POSITION_Y = 60;
+ScoreBoard.TITLE_FONT = '20px Luckiest Guy';
+ScoreBoard.SCORE_FONT = '40px Luckiest Guy';
+ScoreBoard.BANNER_MSG_FONT = '25px Luckiest Guy';
 
 // Pseudoclass methods.
 ScoreBoard.prototype.init = function() {
-    this.sprite = ScoreBoard.Sprite;
+    this.sprite = 'images/char-boy.png';
     this.reset();
 }
 
 ScoreBoard.prototype.reset = function() {
-    this.remainingLives = GameBoard.LivesPerGame;
-    this.gutterMessage = null;
+    this.remainingLives = GameBoard.LIVES_PER_GAME;
+    this.bannerMessage = null;
     this.score = 0;
     this.points = 0;
 }
@@ -48,8 +47,8 @@ ScoreBoard.prototype.setSprite = function(sprite) {
     this.sprite = sprite;
 }
 
-ScoreBoard.prototype.setGutterMessage = function(message) {
-    this.gutterMessage = message;
+ScoreBoard.prototype.setBannerMessage = function(message) {
+    this.bannerMessage = message;
 }
 
 ScoreBoard.prototype.update = function() {
@@ -63,42 +62,42 @@ ScoreBoard.prototype.update = function() {
 ScoreBoard.prototype.render = function(score) {
     // Overwrite existing scoreboard.
     ctx.fillStyle = '#ffd800';
-    ctx.fillRect(0, 0, GameBoard.TileWidth * gameBoard.columns, topBuffer + ScoreBoard.Height);
+    ctx.fillRect(0, 0, GameBoard.TILE_WIDTH * gameBoard.columns, topBuffer + ScoreBoard.HEIGHT);
 
     // Render remaining lives icons.
     var image = Resources.get(this.sprite);
     var width = image.width * 0.5;
     var height = image.height * 0.5;
     for (i = 0; i < this.remainingLives; ++i) {
-        ctx.drawImage(image, ScoreBoard.LivesPositionX + i * width, ScoreBoard.LivesPositionY, width, height);
+        ctx.drawImage(image, ScoreBoard.LIVES_POSITION_X + i * width, ScoreBoard.LIVES_POSITION_Y, width, height);
     }
 
     // Render remaining lives title.
     ctx.fillStyle = 'black';
-    ctx.font = ScoreBoard.TitleFont;
+    ctx.font = ScoreBoard.TITLE_FONT;
     ctx.textAlign = 'left';
-    ctx.fillText('Remaining Lives', ScoreBoard.LivesPositionX, ScoreBoard.TitleTextY);
+    ctx.fillText('Remaining Lives', ScoreBoard.LIVES_POSITION_X, ScoreBoard.TITLE_TEXT_Y);
 
     // Render remaining time and score title.
     ctx.textAlign = 'right';
-    ctx.fillText('Remaining Time / Score', ScoreBoard.ScorePositionX, ScoreBoard.TitleTextY);
+    ctx.fillText('Remaining Time / Score', ScoreBoard.SCORE_POSITION_X, ScoreBoard.TITLE_TEXT_Y);
 
     // Render the remaining time and score.
-    ctx.font = ScoreBoard.ScoreFont;
-    ctx.fillText(gameBoard.remainingTime + ' / ' + this.score, ScoreBoard.ScorePositionX, ScoreBoard.ScorePositionY);
+    ctx.font = ScoreBoard.SCORE_FONT;
+    ctx.fillText(gameBoard.remainingTime + ' / ' + this.score, ScoreBoard.SCORE_POSITION_X, ScoreBoard.SCORE_POSITION_Y);
 
-    this.renderGutterMessage();
+    this.renderBannerMessage();
     this.points = 0;
 }
 
-ScoreBoard.prototype.renderGutterMessage = function() {
-    if (this.gutterMessage != null) {
+ScoreBoard.prototype.renderBannerMessage = function() {
+    if (this.bannerMessage != null) {
         ctx.fillStyle = 'black';
-        ctx.font = ScoreBoard.GutterMsgFont;
+        ctx.font = ScoreBoard.BANNER_MSG_FONT;
         ctx.textAlign = 'center';
-        ctx.fillText(this.gutterMessage,
-            GameBoard.TileWidth / 2 + gameBoard.getWidth() / 2,
-            GameBoard.TileHeight / 2 + gameBoard.getHeight());
+        ctx.fillText(this.bannerMessage,
+            GameBoard.TILE_WIDTH / 2 + gameBoard.getWidth() / 2,
+            GameBoard.TILE_HEIGHT / 2 + gameBoard.getHeight());
     }
 }
 
@@ -131,21 +130,21 @@ function GameBoard(rows, columns) {
 };
 
 // Pseudoclass properties.
-GameBoard.LivesPerGame = 4;
-GameBoard.TileWidth = 101;
-GameBoard.TileHeight = 83;
-GameBoard.TopRow = 0;
-GameBoard.PointsPerSecond = 1000; // only when the player is active.
-GameBoard.GameDuration = 120; // in seconds.
-GameBoard.HelpScreens = 3; // game instructions, hints, attribution.
+GameBoard.LIVES_PER_GAME = 4;
+GameBoard.TILE_WIDTH = 101;
+GameBoard.TILE_HEIGHT = 83;
+GameBoard.TOP_ROW = 0;
+GameBoard.POINTS_PER_SECOND = 1000; // only when the player is active.
+GameBoard.GAME_DURATION = 120; // in seconds.
+GameBoard.HELP_SCREENS = 3; // game instructions, hints, attribution.
 
 // Pseudoclass methods.
 GameBoard.prototype.reset = function() {
     this.stopwatch.reset();
-    this.remainingTime = GameBoard.GameDuration;
+    this.remainingTime = GameBoard.GAME_DURATION;
     this.gameOver = false;
     this.paused = false;
-    this.helpScreen = GameRulesDialog.Id; // start-up screen.
+    this.helpScreen = GameRulesDialog.ID; // start-up screen.
     this.demoMode = this.firstRun;
     this.showHelp = this.firstRun;
     this.gameMode = !this.firstRun;
@@ -173,7 +172,7 @@ GameBoard.prototype.update = function() {
         }
         else {
             this.stopwatch.start(); // or resume / normal game play.
-            this.remainingTime = GameBoard.GameDuration - this.stopwatch.seconds();
+            this.remainingTime = GameBoard.GAME_DURATION - this.stopwatch.seconds();
 
             // Determine if the game is over.
             if (this.isGameOver()) {
@@ -204,11 +203,11 @@ GameBoard.prototype.getSeconds = function() {
 }
 
 GameBoard.prototype.getWidth = function() {
-    return (this.columns - 1) * GameBoard.TileWidth;
+    return (this.columns - 1) * GameBoard.TILE_WIDTH;
 }
 
 GameBoard.prototype.getHeight = function() {
-    return (this.rows - 1) * GameBoard.TileHeight;
+    return (this.rows - 1) * GameBoard.TILE_HEIGHT;
 }
 
 GameBoard.prototype.getRandomEnemyRow = function() {
@@ -222,11 +221,11 @@ GameBoard.prototype.getBottomRow = function() {
 }
 
 GameBoard.prototype.getRowFromY = function(y, offset) {
-    return (y - offset) / GameBoard.TileHeight;
+    return (y - offset) / GameBoard.TILE_HEIGHT;
 }
 
 GameBoard.prototype.getYFromRow = function(row, offset) {
-    return (row * GameBoard.TileHeight) + offset;
+    return (row * GameBoard.TILE_HEIGHT) + offset;
 }
 
 GameBoard.prototype.playSound = function(soundFile) {
@@ -271,7 +270,7 @@ GameBoard.prototype.handleInput = function(key, ctrlKey) {
             // Close any open dialogs and start demo mode.
             if ((this.demoMode && this.showHelp) || (this.gameMode && this.gameOver)) {
                 this.startDemoMode();
-                scoreBoard.setGutterMessage('Hit the spacebar to play!');
+                scoreBoard.setBannerMessage('Hit the spacebar to play!');
             }
             break;
         case 'space':
@@ -294,7 +293,7 @@ GameBoard.prototype.showPreviousHelpScreen = function() {
     if (this.demoMode || this.resumeGame) {
         this.helpScreen--;
         if (this.helpScreen < 0) {
-            this.helpScreen = GameBoard.HelpScreens - 1;
+            this.helpScreen = GameBoard.HELP_SCREENS - 1;
         }
     }
 }
@@ -302,7 +301,7 @@ GameBoard.prototype.showPreviousHelpScreen = function() {
 GameBoard.prototype.showNextHelpScreen = function() {
     if (this.demoMode || this.resumeGame) {
         this.helpScreen++;
-        if (this.helpScreen == GameBoard.HelpScreens) {
+        if (this.helpScreen == GameBoard.HELP_SCREENS) {
             this.helpScreen = 0;
         }
     }
@@ -310,9 +309,9 @@ GameBoard.prototype.showNextHelpScreen = function() {
 
 GameBoard.prototype.showHelpScreen = function() {
     gameOverDialog.hide();
-    gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.Id);
-    hintsDialog.visible = (this.helpScreen == HintsDialog.Id);
-    attributionDialog.visible = (this.helpScreen == AttributionDialog.Id);
+    gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.ID);
+    hintsDialog.visible = (this.helpScreen == HintsDialog.ID);
+    attributionDialog.visible = (this.helpScreen == AttributionDialog.ID);
 }
 
 GameBoard.prototype.hideHelpScreens = function() {
@@ -392,17 +391,17 @@ InteractiveItem.prototype.overlapsWith = function(other) {
 function Enemy(id) {
     var width = 101;
     var visibleWidth = 101;
-    var startingXPosition = -GameBoard.TileWidth; // off-canvas.
+    var startingXPosition = -GameBoard.TILE_WIDTH; // off-canvas.
     var startingYPosition = 0; // dynamically determined.
     InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, 'images/enemy-red.png');
 
     // Build sprite array.
     this.info = [
-        { sprite: 'images/enemy-green.png', color: 'green', charm: 'images/charm-green.png', points: Enemy.KillPointsGreen },
-        { sprite: 'images/enemy-blue.png', color: 'blue', charm: 'images/charm-blue.png', points: Enemy.KillPointsBlue },
-        { sprite: 'images/enemy-yellow.png', color: 'yellow', charm: 'images/charm-yellow.png', points: Enemy.KillPointsYellow },
-        { sprite: 'images/enemy-purple.png', color: 'purple', charm: 'images/charm-purple.png', points: Enemy.KillPointsPurple },
-        { sprite: 'images/enemy-red.png', color: 'red', charm: 'images/charm-red.png', points: Enemy.KillPointsRed }
+        { sprite: 'images/enemy-green.png', color: 'green', charm: 'images/charm-green.png', points:    Enemy.KILL_POINTS_GREEN  },
+        { sprite: 'images/enemy-blue.png', color: 'blue', charm: 'images/charm-blue.png', points:       Enemy.KILL_POINTS_BLUE   },
+        { sprite: 'images/enemy-yellow.png', color: 'yellow', charm: 'images/charm-yellow.png', points: Enemy.KILL_POINTS_YELLOW },
+        { sprite: 'images/enemy-purple.png', color: 'purple', charm: 'images/charm-purple.png', points: Enemy.KILL_POINTS_PURPLE },
+        { sprite: 'images/enemy-red.png', color: 'red', charm: 'images/charm-red.png', points:          Enemy.KILL_POINTS_RED    }
     ];
 
     this.init();
@@ -412,35 +411,35 @@ Enemy.prototype = Object.create(InteractiveItem.prototype);
 Enemy.prototype.constructor = Enemy;
 
 // Pseudoclass properties.
-Enemy.HitFromBehindBias = 5; // slightly bumping an enemy from behind, no worries.
-Enemy.ZombieLifetime = 100; // time in game ticks for a zombie to fade away.
+Enemy.HIT_FROM_BEHIND_BIAS = 5; // slightly bumping an enemy from behind, no worries.
+Enemy.ZOMBIE_LIFETIME = 100; // time in game ticks for a zombie to fade away.
 
-Enemy.MinDelay = 0;   // Delay is the time in game ticks that an enemy waits
+Enemy.MIN_DELAY = 0;   // Delay is the time in game ticks that an enemy waits
 Enemy.MaxDelay = 100; // before starting a(nother) crossing of the game board.
 
-Enemy.MinSpeed = 75;
-Enemy.MaxSpeed = 300;
+Enemy.MIN_SPEED = 75;
+Enemy.MAX_SPEED = 300;
 
-Enemy.OffsetY = -18; // to vertically center an enemy in their row.
+Enemy.OFFSET_Y = -18; // to vertically center an enemy in their row.
 
-Enemy.KillPointsGreen = 2000;
-Enemy.KillPointsBlue = 4000;
-Enemy.KillPointsYellow = 6000;
-Enemy.KillPointsPurple = 8000;
-Enemy.KillPointsRed = 10000;
+Enemy.KILL_POINTS_GREEN = 2000;
+Enemy.KILL_POINTS_BLUE = 4000;
+Enemy.KILL_POINTS_YELLOW = 6000;
+Enemy.KILL_POINTS_PURPLE = 8000;
+Enemy.KILL_POINTS_RED = 10000;
 
 // The +/- variation from the exact center of a tile column that
 // defines an acceptable range for charms to be dropped.
-Enemy.ColumnTolerance = GameBoard.TileWidth * 0.01;
+Enemy.COLUMN_TOLERANCE = GameBoard.TILE_WIDTH * 0.01;
 
 // Pseudoclass methods.
 Enemy.prototype.init = function() {
     this.row = gameBoard.getRandomEnemyRow();
     this.x = this.startingXPosition;
-    this.y = gameBoard.getYFromRow(this.row, Enemy.OffsetY);
+    this.y = gameBoard.getYFromRow(this.row, Enemy.OFFSET_Y);
 
-    this.delay = GameBoard.Random(Enemy.MinDelay, Enemy.MaxDelay);
-    this.speed = GameBoard.Random(Enemy.MinSpeed, Enemy.MaxSpeed);
+    this.delay = GameBoard.Random(Enemy.MIN_DELAY, Enemy.MaxDelay);
+    this.speed = GameBoard.Random(Enemy.MIN_SPEED, Enemy.MAX_SPEED);
 
     // The enemy speed determines:
     //   - the color of the sprite that's assigned,
@@ -449,13 +448,13 @@ Enemy.prototype.init = function() {
     this.index = this.getIndex();
     this.sprite = this.info[this.index].sprite;
 
-    this.zombieCounter = Enemy.ZombieLifetime;
+    this.zombieCounter = Enemy.ZOMBIE_LIFETIME;
     this.zombie = false;
 }
 
 Enemy.prototype.render = function() {
     if (this.zombie) {
-        ctx.globalAlpha = this.zombieCounter / Enemy.ZombieLifetime;
+        ctx.globalAlpha = this.zombieCounter / Enemy.ZOMBIE_LIFETIME;
         InteractiveItem.prototype.render.call(this);
         ctx.globalAlpha = 1;
         if (!gameBoard.paused && this.zombieCounter > 0) {
@@ -481,7 +480,7 @@ Enemy.prototype.getIndex = function() {
 }
 
 Enemy.prototype.leftX = function() {
-    return this.x + (this.width / 2) - this.halfVisibleWidth + Enemy.HitFromBehindBias;
+    return this.x + (this.width / 2) - this.halfVisibleWidth + Enemy.HIT_FROM_BEHIND_BIAS;
 }
 
 Enemy.prototype.centeredInTile = function() {
@@ -494,10 +493,10 @@ Enemy.prototype.centeredInTile = function() {
     }
 
     var offset = 10;
-    var columnCenter = GameBoard.TileWidth / 2 - offset;
-    var columnPosition = Math.floor(this.x % GameBoard.TileWidth);
-    if (columnPosition <= (columnCenter - Enemy.ColumnTolerance) ||
-        columnPosition >= (columnCenter + Enemy.ColumnTolerance)) {
+    var columnCenter = GameBoard.TILE_WIDTH / 2 - offset;
+    var columnPosition = Math.floor(this.x % GameBoard.TILE_WIDTH);
+    if (columnPosition <= (columnCenter - Enemy.COLUMN_TOLERANCE) ||
+        columnPosition >= (columnCenter + Enemy.COLUMN_TOLERANCE)) {
         return false; // off center.
     }
 
@@ -533,8 +532,8 @@ function Player(id) {
     var width = 101;
     var visibleWidth = 60;
     var startingXPosition = gameBoard.getWidth() / 2;
-    var startingYPosition = gameBoard.getHeight() + Player.OffsetY;
-    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, Player.DefaultSprite);
+    var startingYPosition = gameBoard.getHeight() + Player.OFFSET_Y;
+    InteractiveItem.call(this, id, width, visibleWidth, startingXPosition, startingYPosition, Player.DEFAULT_SPRITE);
 
     this.init();
 }
@@ -543,8 +542,8 @@ Player.prototype = Object.create(InteractiveItem.prototype);
 Player.prototype.constructor = Player;
 
 // Pseudoclass properties.
-Player.OffsetY = -8; // to vertically center the player in their row.
-Player.DefaultSprite = 'images/char-boy.png';
+Player.OFFSET_Y = -8; // to vertically center the player in their row.
+Player.DEFAULT_SPRITE = 'images/char-boy.png';
 
 // Pseudoclass methods.
 Player.prototype.init = function() {
@@ -583,7 +582,7 @@ Player.prototype.update = function() {
     var currentSeconds = gameBoard.getSeconds();
     if (this.IsActive() &&
         currentSeconds > this.lastSecond) {
-        scoreBoard.addPoints(GameBoard.PointsPerSecond);
+        scoreBoard.addPoints(GameBoard.POINTS_PER_SECOND);
         this.lastSecond = currentSeconds;
     }
 }
@@ -647,23 +646,23 @@ Player.prototype.handleInput = function(key, ctrlKey) {
 
 Player.prototype.moveLeft = function() {
     // If we're not in the far left column, then we can move left.
-    if (this.x >= GameBoard.TileWidth) {
-        this.x -= GameBoard.TileWidth;
+    if (this.x >= GameBoard.TILE_WIDTH) {
+        this.x -= GameBoard.TILE_WIDTH;
     }
 }
 
 Player.prototype.moveRight = function() {
     // If we're not in the far right column, then we can move right.
-    if ((this.x + GameBoard.TileWidth) < ctx.canvas.width) {
-        this.x += GameBoard.TileWidth;
+    if ((this.x + GameBoard.TILE_WIDTH) < ctx.canvas.width) {
+        this.x += GameBoard.TILE_WIDTH;
     }
 }
 
 Player.prototype.moveUp = function() {
     // If we're not in the top row, then we can move up.
-    if (this.row > GameBoard.TopRow) {
+    if (this.row > GameBoard.TOP_ROW) {
         this.row--;
-        this.y -= GameBoard.TileHeight;
+        this.y -= GameBoard.TILE_HEIGHT;
     }
 }
 
@@ -671,7 +670,7 @@ Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
     if (this.row < gameBoard.getBottomRow()) {
         this.row++;
-        this.y += GameBoard.TileHeight;
+        this.y += GameBoard.TILE_HEIGHT;
     }
 }
 
@@ -703,8 +702,8 @@ Player.prototype.IsActive = function() {
 
 // Constructor.
 function Charm(id, points) {
-    InteractiveItem.call(this, id, Charm.Width * 0.25, Charm.VisibleWidth, 0, 0, null);
-    this.points = (points == null ? Charm.DefaultPoints : points);
+    InteractiveItem.call(this, id, Charm.WIDTH * 0.25, Charm.VISIBLE_WIDTH, 0, 0, null);
+    this.points = (points == null ? Charm.DEFAULT_POINTS : points);
     this.visible = false;
 }
 
@@ -712,11 +711,11 @@ Charm.prototype = Object.create(InteractiveItem.prototype);
 Charm.prototype.constructor = Charm;
 
 // Pseudoclass properties.
-Charm.Width = 101;
-Charm.Height = 171;
-Charm.VisibleWidth = 20;
-Charm.OffsetY = 93;
-Charm.DefaultPoints = 5000;
+Charm.WIDTH = 101;
+Charm.HEIGHT = 171;
+Charm.VISIBLE_WIDTH = 20;
+Charm.OFFSET_Y = 93;
+Charm.DEFAULT_POINTS = 5000;
 
 // Pseudoclass methods.
 Charm.prototype.drop = function() {
@@ -726,8 +725,8 @@ Charm.prototype.drop = function() {
         if (enemy.centeredInTile()) {
             // (Re)Init the charm using the enemy's properties.
             this.x = enemy.x;
-            this.y = enemy.y + Charm.OffsetY;
-            this.row = gameBoard.getRowFromY(enemy.y, Enemy.OffsetY);
+            this.y = enemy.y + Charm.OFFSET_Y;
+            this.row = gameBoard.getRowFromY(enemy.y, Enemy.OFFSET_Y);
             this.sprite = enemy.getCharmSprite();
             this.visible = true;
 
@@ -756,8 +755,8 @@ function CharmsManager() {
 }
 
 // Pseudoclass properties.
-CharmsManager.MinDelay = 2; // Variable delay in seconds to wait
-CharmsManager.MaxDelay = 4; // before dropping a(nother) charm.
+CharmsManager.MIN_DELAY = 2; // Variable delay in seconds to wait
+CharmsManager.MAX_DELAY = 4; // before dropping a(nother) charm.
 
 // Pseudoclass methods.
 CharmsManager.prototype.reset = function() {
@@ -772,14 +771,14 @@ CharmsManager.prototype.resetCharmTimer = function() {
     this.startingSeconds = gameBoard.getSeconds();
 
     // A variable delay determines when the next charm is actually dropped.
-    this.delay = GameBoard.Random(CharmsManager.MinDelay, CharmsManager.MaxDelay);
+    this.delay = GameBoard.Random(CharmsManager.MIN_DELAY, CharmsManager.MAX_DELAY);
 }
 
 CharmsManager.prototype.render = function() {
     this.charms.forEach(function(charm) {
         if (charm.visible) {
-            var width = Charm.Width * 0.25;
-            var height = Charm.Height * 0.25;
+            var width = Charm.WIDTH * 0.25;
+            var height = Charm.HEIGHT * 0.25;
 
             charm.render(width, height);
         }
@@ -843,24 +842,24 @@ function Dialog() {
 }
 
 // Pseudoclass properties.
-Dialog.LeftMargin = 0;
-Dialog.TitleFont = '64px Luckiest Guy';
-Dialog.NormalFont = '25px Luckiest Guy';
-Dialog.SmallFont = '20px Luckiest Guy';
-Dialog.Bullet = String.fromCodePoint(0x2022);
-Dialog.LeftIcon = String.fromCodePoint(0x2039); // ‹
-Dialog.RightIcon = String.fromCodePoint(0x203A); // ›
-Dialog.Transparency = 0.83;
+Dialog.LEFT_MARGIN = 0;
+Dialog.TITLE_FONT = '64px Luckiest Guy';
+Dialog.NORMAL_FONT = '25px Luckiest Guy';
+Dialog.SMALL_FONT = '20px Luckiest Guy';
+Dialog.BULLET = String.fromCodePoint(0x2022);
+Dialog.LEFT_ICON = String.fromCodePoint(0x2039); // ‹
+Dialog.RIGHT_ICON = String.fromCodePoint(0x203A); // ›
+Dialog.ALPHA = 0.83;
 
 // Pseudoclass methods.
 Dialog.prototype.init = function() {
     this.width = gameBoard.getWidth();
     this.height = gameBoard.getHeight() / 2;
 
-    this.x = GameBoard.TileWidth / 2;
+    this.x = GameBoard.TILE_WIDTH / 2;
     this.y = this.height / 2;
 
-    this.leftX = this.x + Dialog.LeftMargin;
+    this.leftX = this.x + Dialog.LEFT_MARGIN;
     this.midX = this.x + (this.width / 2);
 
     this.visible = false;
@@ -884,14 +883,20 @@ Dialog.prototype.hide = function() {
 Dialog.prototype.titleText = function(title, x, y) {
     ctx.fillStyle = 'red';
     ctx.textAlign = 'center';
-    ctx.font = Dialog.TitleFont;
+    ctx.font = Dialog.TITLE_FONT;
     ctx.fillText(title, x, y);
 }
 
-Dialog.prototype.startResumeGameText = function(y) {
+Dialog.prototype.startResumeGameText = function(y, again) {
+    again = again || false;
+
+    // Hit the space bar to play ...
+    // Hit the space bar to resume play ...
+    // Hit the space bar to play again ...
     ctx.textAlign = 'center';
     ctx.fillText('Hit the space bar', this.midX, y += 45);
-    ctx.fillText('to' + (gameBoard.resumeGame ? ' resume ' : ' ') + 'play ...', this.midX, y += 27);
+    ctx.fillText('to' + (gameBoard.resumeGame ? ' resume ' : ' ') + 'play' +
+        (again ? ' again ' : ' ') + '...', this.midX, y += 27);
 }
 
 /**
@@ -915,7 +920,7 @@ Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke
         radius = 5;
     }
     ctx.fillStyle = 'black';
-    ctx.globalAlpha = Dialog.Transparency;
+    ctx.globalAlpha = Dialog.ALPHA;
 
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -958,7 +963,7 @@ GameRulesDialog.prototype = Object.create(Dialog.prototype);
 GameRulesDialog.prototype.constructor = GameRulesDialog;
 
 // Pseudoclass properties.
-GameRulesDialog.Id = 0;
+GameRulesDialog.ID = 0;
 
 // Pseudoclass methods.
 GameRulesDialog.prototype.render = function() {
@@ -970,22 +975,22 @@ GameRulesDialog.prototype.render = function() {
 
 GameRulesDialog.prototype.contents = function() {
     var y = this.y + 70;
-    this.titleText('Game Rules ' + Dialog.RightIcon, this.midX, y);
+    this.titleText('Game Rules ' + Dialog.RIGHT_ICON, this.midX, y);
 
-    ctx.font = Dialog.NormalFont;
+    ctx.font = Dialog.NORMAL_FONT;
 
     ctx.textAlign = 'left';
-    ctx.fillText(Dialog.Bullet + ' Move the Player using the', this.leftX, y += 40);
+    ctx.fillText(Dialog.BULLET + ' Move the Player using the', this.leftX, y += 40);
     ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y += 27);
-    ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y += 34);
-    ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y += 34);
+    ctx.fillText(Dialog.BULLET + ' Avoid the ladybugs!', this.leftX, y += 34);
+    ctx.fillText(Dialog.BULLET + ' Get points for each second', this.leftX, y += 34);
     ctx.fillText('   the player is in-play (the grass', this.leftX, y += 27);
     ctx.fillText('   area is NOT considered in-play)', this.leftX, y += 27);
-    ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y += 34);
+    ctx.fillText(Dialog.BULLET + ' Get points for cleaning up', this.leftX, y += 34);
     ctx.fillText('   after the ladybugs', this.leftX, y += 27);
-    ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y += 34);
+    ctx.fillText(Dialog.BULLET + ' Game is over when all lives', this.leftX, y += 34);
     ctx.fillText('   are used or the time is up', this.leftX, y += 27);
-    ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y += 34);
+    ctx.fillText(Dialog.BULLET + ' Ctrl-up/down changes player', this.leftX, y += 34);
     this.startResumeGameText(y);
 }
 
@@ -1009,27 +1014,27 @@ HintsDialog.prototype = Object.create(Dialog.prototype);
 HintsDialog.prototype.constructor = HintsDialog;
 
 // Pseudoclass properties.
-HintsDialog.Id = 1;
+HintsDialog.ID = 1;
 
 // Pseudoclass methods.
 HintsDialog.prototype.contents = function() {
     var y = this.y + 70;
-    this.titleText(Dialog.LeftIcon + ' Game Hints ' + Dialog.RightIcon, this.midX, y);
+    this.titleText(Dialog.LEFT_ICON + ' Game Hints ' + Dialog.RIGHT_ICON, this.midX, y);
 
-    ctx.font = Dialog.NormalFont;
+    ctx.font = Dialog.NORMAL_FONT;
 
     ctx.textAlign = 'left';
-    ctx.fillText(Dialog.Bullet + ' Change players during play to', this.leftX, y += 40);
+    ctx.fillText(Dialog.BULLET + ' Change players during play to', this.leftX, y += 40);
     ctx.fillText('   reveal each characters power', this.leftX, y += 27);
     ctx.fillText('   to defeat certain enemies', this.leftX, y += 27);
-    ctx.fillText(Dialog.Bullet + ' Play wisely! Points for ...', this.leftX, y += 40);
-    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DefaultPoints, this.leftX, y += 30);
-    ctx.fillText('   Each full second in play - ' + GameBoard.PointsPerSecond, this.leftX, y += 30);
-    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KillPointsGreen, this.leftX, y += 30);
-    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KillPointsBlue, this.leftX, y += 30);
-    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KillPointsYellow, this.leftX, y += 30);
-    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KillPointsPurple, this.leftX, y += 30);
-    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KillPointsRed, this.leftX, y += 30);
+    ctx.fillText(Dialog.BULLET + ' Play wisely! Points for ...', this.leftX, y += 40);
+    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 30);
+    ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 30);
+    ctx.fillText('   Defeating Green Enemy - ' +  Enemy.KILL_POINTS_GREEN, this.leftX, y += 30);
+    ctx.fillText('   Defeating Blue Enemy - ' +   Enemy.KILL_POINTS_BLUE, this.leftX, y += 30);
+    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 30);
+    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 30);
+    ctx.fillText('   Defeating Red Enemy - ' +    Enemy.KILL_POINTS_RED, this.leftX, y += 30);
     this.startResumeGameText(y);
 }
 
@@ -1053,38 +1058,20 @@ AttributionDialog.prototype = Object.create(Dialog.prototype);
 AttributionDialog.prototype.constructor = AttributionDialog;
 
 // Pseudoclass properties.
-AttributionDialog.Id = 2;
+AttributionDialog.ID = 2;
 
 // Pseudoclass methods.
 AttributionDialog.prototype.contents = function() {
     var y = this.y + 70;
     this.titleText('Attribution', this.midX, y);
 
-    ctx.textAlign = 'left';
-    ctx.font = Dialog.NormalFont;
+    ctx.font = Dialog.NORMAL_FONT;
 
-    y += 50;
-    ctx.fillText(Dialog.Bullet + ' Some attribution type stuff ...', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   the player is in-play (the grass', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   area is NOT considered in-play)', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   after the ladybugs', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   are used or the time is up', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
+    ctx.textAlign = 'left';
+    ctx.fillText(Dialog.BULLET + ' Some attribution type stuff ...', this.leftX, y += 50);
+
+    // TODO
+
     this.startResumeGameText(y);
 }
 
@@ -1112,24 +1099,16 @@ GameOverDialog.prototype.setReason = function(reason) {
 
 GameOverDialog.prototype.contents = function() {
     var y = this.y + 75;
-
-    ctx.fillStyle = 'red';
-    ctx.textAlign = 'center';
-    ctx.font = Dialog.TitleFont;
-    ctx.fillText('Game Over!', this.midX, y);
+    this.titleText('Game Over!', this.midX, y);
 
     if (this.reason != null) {
         y += 30;
-        ctx.font = Dialog.SmallFont;
+        ctx.font = Dialog.SMALL_FONT;
         ctx.fillText('(Outta ' + this.reason + ')', this.midX, y);
     }
 
-    ctx.font = Dialog.NormalFont;
-
-    y += 50;
-    ctx.fillText('Hit the space bar', this.midX, y);
-    y += 30;
-    ctx.fillText('to play again ...', this.midX, y);
+    ctx.font = Dialog.NORMAL_FONT;
+    this.startResumeGameText(y, true);
 }
 
 //---------------------------------
@@ -1186,14 +1165,7 @@ document.addEventListener('keydown', function(e) {
     // Ensure event is not null.
     e = e || window.event;
 
-    var allowedKeys = {
-        27: 'esc',
-        32: 'space',
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
+    var allowedKeys = { 27: 'esc', 32: 'space', 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
 
     gameBoard.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
     player.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
