@@ -9,7 +9,6 @@ function ScoreBoard() {
 
 // Pseudoclass properties.
 ScoreBoard.Height = 48;
-ScoreBoard.LivesPerGame = 4;
 ScoreBoard.TitleTextY = 17;
 ScoreBoard.LivesPositionX = 5;
 ScoreBoard.LivesPositionY = -6;
@@ -27,7 +26,7 @@ ScoreBoard.prototype.init = function() {
 }
 
 ScoreBoard.prototype.reset = function() {
-    this.remainingLives = ScoreBoard.LivesPerGame;
+    this.remainingLives = GameBoard.LivesPerGame;
     this.gutterMessage = null;
     this.score = 0;
     this.points = 0;
@@ -132,6 +131,7 @@ function GameBoard(rows, columns) {
 };
 
 // Pseudoclass properties.
+GameBoard.LivesPerGame = 4;
 GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
 GameBoard.TopRow = 0;
@@ -191,7 +191,7 @@ GameBoard.prototype.isGameOver = function() {
         return true;
     }
 
-    if (this.remainingTime === 0) {
+    if (this.remainingTime <= 0) {
         gameOverDialog.setReason(GameOverDialog.OuttaTimeReason);
         return true;
     }
