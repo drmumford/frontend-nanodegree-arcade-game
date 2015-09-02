@@ -134,8 +134,8 @@ function GameBoard(rows, columns) {
 // Pseudoclass properties.
 GameBoard.TileWidth = 101;
 GameBoard.TileHeight = 83;
-GameBoard.TopRow = 0; // always.
-GameBoard.PointsPerSecond = 100; // only when the player is active.
+GameBoard.TopRow = 0;
+GameBoard.PointsPerSecond = 1000; // only when the player is active.
 GameBoard.GameDuration = 120; // in seconds.
 GameBoard.HelpScreens = 3; // game instructions, hints, attribution.
 
@@ -158,9 +158,7 @@ GameBoard.prototype.reset = function() {
 GameBoard.prototype.update = function() {
     // Show the current help screen.
     if (this.showHelp) {
-        gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.Id);
-        hintsDialog.visible = (this.helpScreen == HintsDialog.Id);
-        attributionDialog.visible = (this.helpScreen == AttributionDialog.Id);
+        this.showHelpScreen();
     }
     else {
         this.hideHelpScreens();
@@ -310,6 +308,13 @@ GameBoard.prototype.showNextHelpScreen = function() {
     }
 }
 
+GameBoard.prototype.showHelpScreen = function() {
+    gameOverDialog.hide();
+    gameRulesDialog.visible = (this.helpScreen == GameRulesDialog.Id);
+    hintsDialog.visible = (this.helpScreen == HintsDialog.Id);
+    attributionDialog.visible = (this.helpScreen == AttributionDialog.Id);
+}
+
 GameBoard.prototype.hideHelpScreens = function() {
     gameRulesDialog.hide();
     hintsDialog.hide();
@@ -393,11 +398,11 @@ function Enemy(id) {
 
     // Build sprite array.
     this.info = [
-        { sprite: 'images/enemy-green.png', charm: 'images/charm-green.png', points: 200 },
-        { sprite: 'images/enemy-blue.png', charm: 'images/charm-blue.png', points: 400 },
-        { sprite: 'images/enemy-yellow.png', charm: 'images/charm-yellow.png', points: 600 },
-        { sprite: 'images/enemy-purple.png', charm: 'images/charm-purple.png', points: 800 },
-        { sprite: 'images/enemy-red.png', charm: 'images/charm-red.png', points: 1000 }
+        { sprite: 'images/enemy-green.png', color: 'green', charm: 'images/charm-green.png', points: Enemy.KillPointsGreen },
+        { sprite: 'images/enemy-blue.png', color: 'blue', charm: 'images/charm-blue.png', points: Enemy.KillPointsBlue },
+        { sprite: 'images/enemy-yellow.png', color: 'yellow', charm: 'images/charm-yellow.png', points: Enemy.KillPointsYellow },
+        { sprite: 'images/enemy-purple.png', color: 'purple', charm: 'images/charm-purple.png', points: Enemy.KillPointsPurple },
+        { sprite: 'images/enemy-red.png', color: 'red', charm: 'images/charm-red.png', points: Enemy.KillPointsRed }
     ];
 
     this.init();
@@ -417,6 +422,12 @@ Enemy.MinSpeed = 75;
 Enemy.MaxSpeed = 300;
 
 Enemy.OffsetY = -18; // to vertically center an enemy in their row.
+
+Enemy.KillPointsGreen = 2000;
+Enemy.KillPointsBlue = 4000;
+Enemy.KillPointsYellow = 6000;
+Enemy.KillPointsPurple = 8000;
+Enemy.KillPointsRed = 10000;
 
 // The +/- variation from the exact center of a tile column that
 // defines an acceptable range for charms to be dropped.
@@ -705,7 +716,7 @@ Charm.Width = 101;
 Charm.Height = 171;
 Charm.VisibleWidth = 20;
 Charm.OffsetY = 93;
-Charm.DefaultPoints = 1000;
+Charm.DefaultPoints = 5000;
 
 // Pseudoclass methods.
 Charm.prototype.drop = function() {
@@ -837,6 +848,8 @@ Dialog.TitleFont = '64px Luckiest Guy';
 Dialog.NormalFont = '25px Luckiest Guy';
 Dialog.SmallFont = '20px Luckiest Guy';
 Dialog.Bullet = String.fromCodePoint(0x2022);
+Dialog.LeftIcon = String.fromCodePoint(0x2039); // ‹
+Dialog.RightIcon = String.fromCodePoint(0x203A); // ›
 Dialog.Transparency = 0.83;
 
 // Pseudoclass methods.
@@ -866,6 +879,19 @@ Dialog.prototype.show = function() {
 
 Dialog.prototype.hide = function() {
     this.visible = false;
+}
+
+Dialog.prototype.titleText = function(title, x, y) {
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
+    ctx.font = Dialog.TitleFont;
+    ctx.fillText(title, x, y);
+}
+
+Dialog.prototype.startResumeGameText = function(y) {
+    ctx.textAlign = 'center';
+    ctx.fillText('Hit the space bar', this.midX, y += 45);
+    ctx.fillText('to' + (gameBoard.resumeGame ? ' resume ' : ' ') + 'play ...', this.midX, y += 27);
 }
 
 /**
@@ -944,44 +970,23 @@ GameRulesDialog.prototype.render = function() {
 
 GameRulesDialog.prototype.contents = function() {
     var y = this.y + 70;
+    this.titleText('Game Rules ' + Dialog.RightIcon, this.midX, y);
 
-    ctx.fillStyle = 'red';
-    ctx.textAlign = 'center';
-    ctx.font = Dialog.TitleFont;
-    ctx.fillText('Game Rules', this.midX, y);
-
-    ctx.textAlign = 'left';
     ctx.font = Dialog.NormalFont;
 
-    y += 50;
-    ctx.fillText(Dialog.Bullet + ' Move the Player using the', this.leftX, y);
-    y += 30;
-    ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y);
-    y += 33;
-    ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y);
-    y += 33;
-    ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y);
-    y += 30;
-    ctx.fillText('   the player is in-play (the grass', this.leftX, y);
-    y += 30;
-    ctx.fillText('   area is NOT considered in-play)', this.leftX, y);
-    y += 33;
-    ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y);
-    y += 30;
-    ctx.fillText('   after the ladybugs', this.leftX, y);
-    y += 33;
-    ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y);
-    y += 30;
-    ctx.fillText('   are used or the time is up', this.leftX, y);
-    y += 33;
-    ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
-
-    ctx.textAlign = 'center';
-
-    y += 45;
-    ctx.fillText('Hit the space bar', this.midX, y);
-    y += 30;
-    ctx.fillText('to' + (gameBoard.resumeGame ? ' resume ' : ' ') + 'play ...', this.midX, y);
+    ctx.textAlign = 'left';
+    ctx.fillText(Dialog.Bullet + ' Move the Player using the', this.leftX, y += 40);
+    ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y += 27);
+    ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y += 34);
+    ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y += 34);
+    ctx.fillText('   the player is in-play (the grass', this.leftX, y += 27);
+    ctx.fillText('   area is NOT considered in-play)', this.leftX, y += 27);
+    ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y += 34);
+    ctx.fillText('   after the ladybugs', this.leftX, y += 27);
+    ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y += 34);
+    ctx.fillText('   are used or the time is up', this.leftX, y += 27);
+    ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y += 34);
+    this.startResumeGameText(y);
 }
 
 //---------------------------------
@@ -1009,44 +1014,23 @@ HintsDialog.Id = 1;
 // Pseudoclass methods.
 HintsDialog.prototype.contents = function() {
     var y = this.y + 70;
+    this.titleText(Dialog.LeftIcon + ' Game Hints ' + Dialog.RightIcon, this.midX, y);
 
-    ctx.fillStyle = 'red';
-    ctx.textAlign = 'center';
-    ctx.font = Dialog.TitleFont;
-    ctx.fillText('Game Hints', this.midX, y);
-
-    ctx.textAlign = 'left';
     ctx.font = Dialog.NormalFont;
 
-    y += 50;
-    ctx.fillText(Dialog.Bullet + ' Oh, a good hint is ...', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   arrow keys: up, down, left, right', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Avoid the ladybugs!', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Get points for each second', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   the player is in-play (the grass', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   area is NOT considered in-play)', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Get points for cleaning up', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   after the ladybugs', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Game is over when all lives', this.leftX, y);
-    //y += 30;
-    //ctx.fillText('   are used or the time is up', this.leftX, y);
-    //y += 33;
-    //ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
-
-    ctx.textAlign = 'center';
-
-    y += 45;
-    ctx.fillText('Hit the space bar', this.midX, y);
-    y += 30;
-    ctx.fillText('to play ...', this.midX, y);
+    ctx.textAlign = 'left';
+    ctx.fillText(Dialog.Bullet + ' Change players during play to', this.leftX, y += 40);
+    ctx.fillText('   reveal each characters power', this.leftX, y += 27);
+    ctx.fillText('   to defeat certain enemies', this.leftX, y += 27);
+    ctx.fillText(Dialog.Bullet + ' Play wisely! Points for ...', this.leftX, y += 40);
+    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DefaultPoints, this.leftX, y += 30);
+    ctx.fillText('   Each full second in play - ' + GameBoard.PointsPerSecond, this.leftX, y += 30);
+    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KillPointsGreen, this.leftX, y += 30);
+    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KillPointsBlue, this.leftX, y += 30);
+    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KillPointsYellow, this.leftX, y += 30);
+    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KillPointsPurple, this.leftX, y += 30);
+    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KillPointsRed, this.leftX, y += 30);
+    this.startResumeGameText(y);
 }
 
 //---------------------------------
@@ -1074,11 +1058,7 @@ AttributionDialog.Id = 2;
 // Pseudoclass methods.
 AttributionDialog.prototype.contents = function() {
     var y = this.y + 70;
-
-    ctx.fillStyle = 'red';
-    ctx.textAlign = 'center';
-    ctx.font = Dialog.TitleFont;
-    ctx.fillText('Attribution', this.midX, y);
+    this.titleText('Attribution', this.midX, y);
 
     ctx.textAlign = 'left';
     ctx.font = Dialog.NormalFont;
@@ -1105,13 +1085,7 @@ AttributionDialog.prototype.contents = function() {
     //ctx.fillText('   are used or the time is up', this.leftX, y);
     //y += 33;
     //ctx.fillText(Dialog.Bullet + ' Ctrl-up/down changes player', this.leftX, y);
-
-    ctx.textAlign = 'center';
-
-    y += 45;
-    ctx.fillText('Hit the space bar', this.midX, y);
-    y += 30;
-    ctx.fillText('to play ...', this.midX, y);
+    this.startResumeGameText(y);
 }
 
 //---------------------------------
