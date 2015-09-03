@@ -68,7 +68,7 @@ ScoreBoard.prototype.render = function() {
     var image = Resources.get(this.sprite);
     var width = image.width * 0.5;
     var height = image.height * 0.5;
-    for (i = 0; i < this.remainingLives; ++i) {
+    for (var i = 0; i < this.remainingLives; ++i) {
         ctx.drawImage(image, ScoreBoard.LIVES_POSITION_X + i * width, ScoreBoard.LIVES_POSITION_Y, width, height);
     }
 
