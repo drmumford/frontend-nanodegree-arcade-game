@@ -987,7 +987,7 @@ GameRulesDialog.prototype.contents = function() {
     ctx.fillText(Dialog.BULLET + ' Game is over when all lives', this.leftX, y += 34);
     ctx.fillText('   are used or the time is up', this.leftX, y += 27);
     ctx.fillText(Dialog.BULLET + ' Ctrl-up/down changes player', this.leftX, y += 34);
-    this.startResumeGameText(y);
+    this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
 }
 
 //---------------------------------
@@ -1022,7 +1022,7 @@ HintsDialog.prototype.contents = function() {
     ctx.fillText(Dialog.BULLET + ' Change players during play to', this.leftX, y += 40);
     ctx.fillText('   reveal each characters power', this.leftX, y += 27);
     ctx.fillText('   to defeat certain enemies', this.leftX, y += 27);
-    ctx.fillText(Dialog.BULLET + ' Play wisely! Points for ...', this.leftX, y += 40);
+    ctx.fillText(Dialog.BULLET + ' Play wisely! Points for ...', this.leftX, y += 34);
     ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 27);
     ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 27);
     ctx.fillText('   Defeating Green Enemy - ' + Enemy.KILL_POINTS_GREEN, this.leftX, y += 27);
@@ -1030,7 +1030,7 @@ HintsDialog.prototype.contents = function() {
     ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 27);
     ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 27);
     ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 27);
-    this.startResumeGameText(y += 22);
+    this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
 }
 
 //---------------------------------
@@ -1065,19 +1065,19 @@ AttributionDialog.prototype.contents = function() {
     ctx.textAlign = 'left';
     ctx.fillText(Dialog.BULLET + ' Original Artwork design by', this.leftX, y += 40);
     ctx.fillText('   Daniel Cook (Lostgarden.com)', this.leftX, y += 27);
-    ctx.fillText('   Stone & Grass Tiles', this.leftX, y += 30);
-    ctx.fillText('   Red Enemy & Red Player', this.leftX, y += 30);
-    ctx.fillText('   Green, Blue & Yellow Players', this.leftX, y += 30);
+    ctx.fillText('   Stone & Grass Tiles', this.leftX, y += 27);
+    ctx.fillText('   Red Enemy & Red Player', this.leftX, y += 27);
+    ctx.fillText('   Green, Blue & Yellow Players', this.leftX, y += 27);
 
-    ctx.fillText(Dialog.BULLET + ' Additional colors for Enemies', this.leftX, y += 40);
+    ctx.fillText(Dialog.BULLET + ' Additional colors for Enemies', this.leftX, y += 34);
     ctx.fillText('   by Cheryl Court (cherylcourt.ca)', this.leftX, y += 27);
     ctx.fillText('   Green, Blue, Yellow & Purple', this.leftX, y += 27);
 
-    ctx.fillText(Dialog.BULLET + ' Artwork by David Mumford', this.leftX, y += 40);
+    ctx.fillText(Dialog.BULLET + ' Artwork by David Mumford', this.leftX, y += 34);
     ctx.fillText('   All Ladybug Charms', this.leftX, y += 27);
     ctx.fillText('   Modifications to Purple Player', this.leftX, y += 27);
 
-    this.startResumeGameText(y);
+    this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
 }
 
 //---------------------------------
@@ -1113,16 +1113,16 @@ AttributionSoundsDialog.prototype.contents = function() {
     ctx.fillText(Dialog.BULLET + ' All sounds obtained from', this.leftX, y += 40);
     ctx.fillText('   freesound.org - CC BY 3.0 License', this.leftX, y += 27);
 
-    ctx.fillText(Dialog.BULLET + ' Enemy/Player Collisions by', this.leftX, y += 40);
-    ctx.fillText('   Leviclasssen, hit_002.wav.', this.leftX, y += 27);
+    ctx.fillText(Dialog.BULLET + ' Enemy/Player Collisions', this.leftX, y += 34);
+    ctx.fillText('   By Leviclasssen, hit_002.wav.', this.leftX, y += 27);
 
-    ctx.fillText(Dialog.BULLET + ' Ladybug Charm drops by ', this.leftX, y += 40);
-    ctx.fillText('    Yottasounds, pop.wav.', this.leftX, y += 27);
+    ctx.fillText(Dialog.BULLET + ' Ladybug Charm drops', this.leftX, y += 34);
+    ctx.fillText('    By Yottasounds, pop.wav.', this.leftX, y += 27);
 
-    ctx.fillText(Dialog.BULLET + ' Ladybug Charm pickups by ', this.leftX, y += 40);
-    ctx.fillText('    EdgardEdition, thud6.wav.', this.leftX, y += 27);
+    ctx.fillText(Dialog.BULLET + ' Ladybug Charm pickups', this.leftX, y += 34);
+    ctx.fillText('    By EdgardEdition, thud6.wav.', this.leftX, y += 27);
 
-    this.startResumeGameText(y += 77);
+    this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
 }
 
 //---------------------------------
