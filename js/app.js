@@ -125,6 +125,7 @@ function GameBoard(rows, columns) {
     this.resumeGame = false;
     this.gameOver = false;
 
+    this.soundOn = false;
     this.sounds = {
         collision: 'sounds/hit.wav',
         charmdrop: 'sounds/pop.wav',
@@ -237,8 +238,10 @@ GameBoard.prototype.getYFromRow = function(row, offset) {
 };
 
 GameBoard.prototype.playSound = function(soundFile) {
-    var sound = new Audio(soundFile);
-    sound.play();
+    if (gameBoard.soundOn) {
+        var sound = new Audio(soundFile);
+        sound.play();
+    }
 };
 
 GameBoard.prototype.startNewGame = function() {
@@ -1204,6 +1207,11 @@ function showGameInfo() {
         gameBoard.showHelp = true;
         gameBoard.resumeGame = !gameBoard.gameOver;
     }
+}
+
+function toggleSound() {
+    gameBoard.soundOn = !gameBoard.soundOn;
+    document.getElementById('sound').innerHTML = gameBoard.soundOn ? 'Sound On' : 'Sound Off';
 }
 
 //---------------------------------
