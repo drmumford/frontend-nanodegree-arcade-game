@@ -713,6 +713,7 @@ Player.prototype.IsActive = function() {
 function Charm(id, points) {
     InteractiveItem.call(this, id, Charm.WIDTH * 0.25, Charm.VISIBLE_WIDTH, 0, 0, null);
     this.points = (points == null ? Charm.DEFAULT_POINTS : points);
+    this.counter = Charm.LIFETIME;
     this.visible = false;
 }
 
@@ -725,8 +726,26 @@ Charm.HEIGHT = 171;
 Charm.VISIBLE_WIDTH = 20;
 Charm.OFFSET_Y = 100;
 Charm.DEFAULT_POINTS = 5000;
+Charm.LIFETIME = 2000; // time in game ticks for a charm to fade away.
 
 // Pseudoclass methods.
+Charm.prototype.render = function(width, height) {
+    if (this.visible) {
+        // 90% of charm's lifetime is spent opaque; in the final 10% it fades away.
+        ctx.globalAlpha = this.counter > Charm.LIFETIME / 10 ? 1 : this.counter / (Charm.LIFETIME / 10);
+        InteractiveItem.prototype.render.call(this, width, height);
+        ctx.globalAlpha = 1;
+        if (!gameBoard.paused) {
+            if (this.counter > 0) {
+                this.counter--;
+            }
+            else {
+                this.visible = false;  // so it can be dropped again.
+            }
+        }
+    }
+}
+
 Charm.prototype.drop = function() {
     // Charms are dropped beneath an enemy; find one in an acceptable position.
     for (var i = 0; i < allEnemies.length; ++i) {
@@ -738,7 +757,9 @@ Charm.prototype.drop = function() {
             this.y += GameBoard.Random(0, 20) * -GameBoard.Random(0, 1); // put some random variation in y too.
             this.row = gameBoard.getRowFromY(enemy.y, Enemy.OFFSET_Y);
             this.sprite = enemy.getCharmSprite();
+
             this.visible = true;
+            this.counter = Charm.LIFETIME;
 
             gameBoard.playSound(gameBoard.sounds.charmdrop);
             return true;
