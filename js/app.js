@@ -84,7 +84,12 @@ ScoreBoard.prototype.render = function(score) {
 
     // Render the remaining time and score.
     ctx.font = ScoreBoard.SCORE_FONT;
-    ctx.fillText(gameBoard.remainingTime + ' / ' + this.score, ScoreBoard.SCORE_POSITION_X, ScoreBoard.SCORE_POSITION_Y);
+    if (gameBoard.gameMode) {
+        ctx.fillText(gameBoard.remainingTime + ' / ' + this.score, ScoreBoard.SCORE_POSITION_X, ScoreBoard.SCORE_POSITION_Y);
+    }
+    else { // demo mode doesn't show the elapsed game time.
+        ctx.fillText(GameBoard.GAME_DURATION + ' / 0', ScoreBoard.SCORE_POSITION_X, ScoreBoard.SCORE_POSITION_Y);
+    }
 
     this.renderBannerMessage();
     this.points = 0;
@@ -163,6 +168,11 @@ GameBoard.prototype.update = function() {
         this.hideHelpScreens();
     }
 
+    if (!this.paused) {
+        this.stopwatch.start();
+        this.remainingTime = GameBoard.GAME_DURATION - this.stopwatch.seconds();
+    }
+
     if (this.demoMode) {
         gameOverDialog.visible = false;
     }
@@ -171,9 +181,6 @@ GameBoard.prototype.update = function() {
             this.stopwatch.stop(); // pause.
         }
         else {
-            this.stopwatch.start(); // or resume / normal game play.
-            this.remainingTime = GameBoard.GAME_DURATION - this.stopwatch.seconds();
-
             // Determine if the game is over.
             if (this.isGameOver()) {
                 this.paused = true;
