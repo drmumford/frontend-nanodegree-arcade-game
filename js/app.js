@@ -491,7 +491,7 @@ Enemy.prototype.centeredInTile = function() {
         return false; // off-screen to the left.
     }
 
-    if (this.x >= gameBoard.getWidth()) {
+    if (this.x >= (gameBoard.columns * GameBoard.TILE_WIDTH)) {
         return false; // off-screen to the right.
     }
 
