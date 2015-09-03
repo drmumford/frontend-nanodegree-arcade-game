@@ -3,12 +3,15 @@ body {
     background-color: black;
 }
 
+header {
+    font: 40px/80px 'Luckiest Guy', cursive;
+}
+
 .container {
     background-color: #ffd800;
     width: 505px;
     margin: auto;
     color: red;
-    font: 40px/80px 'Luckiest Guy', cursive;
     border-radius: 15px;
 }
 

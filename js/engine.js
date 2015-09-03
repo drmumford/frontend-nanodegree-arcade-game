@@ -26,7 +26,7 @@ var Engine = (function(global) {
         lastTime;
 
     var topBuffer = 20;
-    var bottomBuffer = 100;
+    var bottomBuffer = 88;
     canvas.width = 5 * 101;
     canvas.height = topBuffer + 6 * 83 + bottomBuffer;
 
