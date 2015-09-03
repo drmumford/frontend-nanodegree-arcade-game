@@ -1196,6 +1196,7 @@ GameOverDialog.prototype.contents = function() {
 function showGameInfo() {
     if (gameBoard.demoMode) {
         gameBoard.showHelp = true;
+        scoreBoard.bannerMessage = null; // clear it out.
     }
     else if (gameBoard.gameMode && (gameBoard.paused || gameBoard.gameOver)) {
         gameBoard.showHelp = true;
