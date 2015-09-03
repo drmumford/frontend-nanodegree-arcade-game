@@ -1155,6 +1155,10 @@ AttributionSoundsDialog.prototype.contents = function() {
     ctx.fillText(Dialog.BULLET + ' Ladybug Charm pickups', this.leftX, y += 34);
     ctx.fillText('    By EdgardEdition, thud6.wav.', this.leftX, y += 27);
 
+    ctx.fillText(Dialog.BULLET + ' Luckiest Guy Font by Brian J.', this.leftX, y += 34);
+    ctx.fillText('    Bonislawsky. Available under', this.leftX, y += 27);
+    ctx.fillText('    the Apache 2.0 License', this.leftX, y += 27);
+
     this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
 };
 
