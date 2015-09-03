@@ -5,7 +5,7 @@
 // Constructor.
 function ScoreBoard() {
     this.init();
-};
+}
 
 // Pseudoclass properties.
 ScoreBoard.HEIGHT = 48;
@@ -22,34 +22,34 @@ ScoreBoard.BANNER_MSG_FONT = '25px Luckiest Guy';
 ScoreBoard.prototype.init = function() {
     this.sprite = 'images/char-boy.png';
     this.reset();
-}
+};
 
 ScoreBoard.prototype.reset = function() {
     this.remainingLives = GameBoard.LIVES_PER_GAME;
     this.bannerMessage = null;
     this.score = 0;
     this.points = 0;
-}
+};
 
 ScoreBoard.prototype.addLife = function() {
     this.remainingLives++;
-}
+};
 
 ScoreBoard.prototype.removeLife = function() {
     this.remainingLives--;
-}
+};
 
 ScoreBoard.prototype.addPoints = function(points) {
     this.points += points;
-}
+};
 
 ScoreBoard.prototype.setSprite = function(sprite) {
     this.sprite = sprite;
-}
+};
 
 ScoreBoard.prototype.setBannerMessage = function(message) {
     this.bannerMessage = message;
-}
+};
 
 ScoreBoard.prototype.update = function() {
     if (gameBoard.paused) {
@@ -57,9 +57,9 @@ ScoreBoard.prototype.update = function() {
     }
 
     this.score += this.points;
-}
+};
 
-ScoreBoard.prototype.render = function(score) {
+ScoreBoard.prototype.render = function() {
     // Overwrite existing scoreboard.
     ctx.fillStyle = '#ffd800';
     ctx.fillRect(0, 0, GameBoard.TILE_WIDTH * gameBoard.columns, topBuffer + ScoreBoard.HEIGHT);
@@ -93,10 +93,10 @@ ScoreBoard.prototype.render = function(score) {
 
     this.renderBannerMessage();
     this.points = 0;
-}
+};
 
 ScoreBoard.prototype.renderBannerMessage = function() {
-    if (this.bannerMessage != null) {
+    if (this.bannerMessage !== null) {
         ctx.fillStyle = 'black';
         ctx.font = ScoreBoard.BANNER_MSG_FONT;
         ctx.textAlign = 'center';
@@ -104,7 +104,7 @@ ScoreBoard.prototype.renderBannerMessage = function() {
             GameBoard.TILE_WIDTH / 2 + gameBoard.getWidth() / 2,
             GameBoard.TILE_HEIGHT / 2 + gameBoard.getHeight());
     }
-}
+};
 
 //---------------------------------
 // Game Board Pseudoclass.
@@ -129,10 +129,10 @@ function GameBoard(rows, columns) {
         collision: 'sounds/hit.wav',
         charmdrop: 'sounds/pop.wav',
         charmpickup: 'sounds/thud.wav'
-    }
+    };
 
     this.reset();
-};
+}
 
 // Pseudoclass properties.
 GameBoard.LIVES_PER_GAME = 4;
@@ -157,7 +157,7 @@ GameBoard.prototype.reset = function() {
     if (this.firstRun) {
         this.firstRun = false; // show game info once.
     }
-}
+};
 
 GameBoard.prototype.update = function() {
     // Show the current help screen.
@@ -190,7 +190,7 @@ GameBoard.prototype.update = function() {
             }
         }
     }
-}
+};
 
 GameBoard.prototype.isGameOver = function() {
     if (scoreBoard.remainingLives === 0) {
@@ -204,42 +204,42 @@ GameBoard.prototype.isGameOver = function() {
     }
 
     return false; // play on!
-}
+};
 
 GameBoard.prototype.getSeconds = function() {
     return this.stopwatch.seconds();
-}
+};
 
 GameBoard.prototype.getWidth = function() {
     return (this.columns - 1) * GameBoard.TILE_WIDTH;
-}
+};
 
 GameBoard.prototype.getHeight = function() {
     return (this.rows - 1) * GameBoard.TILE_HEIGHT;
-}
+};
 
 GameBoard.prototype.getRandomEnemyRow = function() {
     // A random stone tile row. Note: enemies don't use
     // the last two rows (grass tiles).
     return GameBoard.Random(0, this.getBottomRow() - 2);
-}
+};
 
 GameBoard.prototype.getBottomRow = function() {
     return this.rows - 1;
-}
+};
 
 GameBoard.prototype.getRowFromY = function(y, offset) {
     return (y - offset) / GameBoard.TILE_HEIGHT;
-}
+};
 
 GameBoard.prototype.getYFromRow = function(row, offset) {
     return (row * GameBoard.TILE_HEIGHT) + offset;
-}
+};
 
 GameBoard.prototype.playSound = function(soundFile) {
     var sound = new Audio(soundFile);
     sound.play();
-}
+};
 
 GameBoard.prototype.startNewGame = function() {
     this.hideHelpScreens();
@@ -252,22 +252,26 @@ GameBoard.prototype.startNewGame = function() {
     for (var i = 0; i < allEnemies.length; ++i) {
         allEnemies[i].init();
     }
-}
+};
 
 GameBoard.prototype.startDemoMode = function() {
     this.startNewGame();
     this.gameMode = false;
     this.demoMode = true;
     this.showHelp = false;
-}
+};
 
 // Generate a random number x, where lowLimit <= x <= highLimit.
 GameBoard.Random = function(lowLimit, highLimit) {
     return lowLimit + Math.floor(Math.random() * (highLimit - lowLimit + 1));
-}
+};
 
-GameBoard.prototype.handleInput = function(key, ctrlKey) {
+GameBoard.prototype.handleInput = function(key) {
     switch (key) {
+        case 'debug':
+            console.log("DemoMode=" + this.demoMode + ", GameMode=" + this.gameMode + ", GameOver=" + this.gameOver +
+                ", paused=" + this.paused + ", showHelp=" + this.showHelp + ", resumeGame=" + this.resumeGame);
+            break;
         case 'left':
             this.showPreviousHelpScreen();
             break;
@@ -295,7 +299,7 @@ GameBoard.prototype.handleInput = function(key, ctrlKey) {
             }
             break;
     }
-}
+};
 
 GameBoard.prototype.showPreviousHelpScreen = function() {
     if (this.showHelp) {
@@ -304,7 +308,7 @@ GameBoard.prototype.showPreviousHelpScreen = function() {
             this.helpScreen = GameBoard.HELP_SCREENS - 1;
         }
     }
-}
+};
 
 GameBoard.prototype.showNextHelpScreen = function() {
     if (this.showHelp) {
@@ -313,7 +317,7 @@ GameBoard.prototype.showNextHelpScreen = function() {
             this.helpScreen = 0;
         }
     }
-}
+};
 
 GameBoard.prototype.showHelpScreen = function() {
     gameOverDialog.hide();
@@ -321,14 +325,14 @@ GameBoard.prototype.showHelpScreen = function() {
     hintsDialog.visible = (this.helpScreen == HintsDialog.ID);
     attributionDialog.visible = (this.helpScreen == AttributionDialog.ID);
     attributionSoundsDialog.visible = (this.helpScreen == AttributionSoundsDialog.ID);
-}
+};
 
 GameBoard.prototype.hideHelpScreens = function() {
     gameRulesDialog.hide();
     hintsDialog.hide();
     attributionDialog.hide();
     attributionSoundsDialog.hide();
-}
+};
 
 //---------------------------------
 // RenderableItem Pseudoclass.
@@ -350,11 +354,11 @@ RenderableItem.prototype.render = function(width, height) {
     else {
         ctx.drawImage(Resources.get(this.sprite), this.x, topBuffer + this.y, width, height); // scaled
     }
-}
+};
 
 RenderableItem.prototype.setSprite = function(sprite) {
     this.sprite = sprite;
-}
+};
 
 //---------------------------------
 // InteractiveItem Pseudoclass.
@@ -378,11 +382,11 @@ InteractiveItem.prototype.constructor = InteractiveItem;
 // Pseudoclass methods.
 InteractiveItem.prototype.leftX = function() {
     return this.x + (this.width / 2) - this.halfVisibleWidth;
-}
+};
 
 InteractiveItem.prototype.rightX = function() {
     return this.x + (this.width / 2) + this.halfVisibleWidth;
-}
+};
 
 InteractiveItem.prototype.overlapsWith = function(other) {
     return (
@@ -391,7 +395,7 @@ InteractiveItem.prototype.overlapsWith = function(other) {
         (this.leftX() < other.rightX()) &&
         (this.rightX() > other.leftX())
     );
-}
+};
 
 //---------------------------------
 // Enemy Pseudoclass.
@@ -460,7 +464,7 @@ Enemy.prototype.init = function() {
 
     this.zombieCounter = Enemy.ZOMBIE_LIFETIME;
     this.zombie = false;
-}
+};
 
 Enemy.prototype.render = function() {
     if (this.zombie) {
@@ -474,11 +478,11 @@ Enemy.prototype.render = function() {
     else {
         InteractiveItem.prototype.render.call(this);
     }
-}
+};
 
 Enemy.prototype.getCharmSprite = function() {
     return this.info[this.index].charm;
-}
+};
 
 Enemy.prototype.getIndex = function() {
     if (this.speed < 120) return 0;
@@ -487,11 +491,11 @@ Enemy.prototype.getIndex = function() {
     if (this.speed < 255) return 3;
 
     return 4;
-}
+};
 
 Enemy.prototype.leftX = function() {
     return this.x + (this.width / 2) - this.halfVisibleWidth + Enemy.HIT_FROM_BEHIND_BIAS;
-}
+};
 
 Enemy.prototype.centeredInTile = function() {
     if (this.x <= 0) {
@@ -510,7 +514,7 @@ Enemy.prototype.centeredInTile = function() {
     }
 
     return true; // enemy is centered in the column within our tolerance.
-}
+};
 
 // Update the enemy's position, required method for game.
 // Parameter: dt, a time delta between ticks.
@@ -530,7 +534,7 @@ Enemy.prototype.update = function(dt) {
             this.init(); // for next run.
         }
     }
-}
+};
 
 //---------------------------------
 // Player Pseudoclass.
@@ -567,14 +571,14 @@ Player.prototype.init = function() {
 
     this.index = this.info.length - 1; // the index of our default sprite.
     this.reset();
-}
+};
 
 Player.prototype.reset = function() {
     this.lastSecond = gameBoard.getSeconds();
     this.row = gameBoard.getBottomRow();
     this.x = this.startingXPosition;
     this.y = this.startingYPosition;
-}
+};
 
 // Update the player's position; basically detect collisions
 // and reset the player position, if necessary.
@@ -594,7 +598,7 @@ Player.prototype.update = function() {
         scoreBoard.addPoints(GameBoard.POINTS_PER_SECOND);
         this.lastSecond = currentSeconds;
     }
-}
+};
 
 // Determine if the player is touching any enemy.
 Player.prototype.detectEnemyCollisions = function() {
@@ -617,7 +621,7 @@ Player.prototype.detectEnemyCollisions = function() {
             }
         }
     }
-}
+};
 
 // Determine if the player is touching any charm.
 Player.prototype.detectCharmPickups = function() {
@@ -627,7 +631,7 @@ Player.prototype.detectCharmPickups = function() {
             charm.pickup();
         }
     }
-}
+};
 
 Player.prototype.handleInput = function(key, ctrlKey) {
     // No qualifications on when the user can toggle players.
@@ -651,21 +655,21 @@ Player.prototype.handleInput = function(key, ctrlKey) {
             this.moveDown();
         }
     }
-}
+};
 
 Player.prototype.moveLeft = function() {
     // If we're not in the far left column, then we can move left.
     if (this.x >= GameBoard.TILE_WIDTH) {
         this.x -= GameBoard.TILE_WIDTH;
     }
-}
+};
 
 Player.prototype.moveRight = function() {
     // If we're not in the far right column, then we can move right.
     if ((this.x + GameBoard.TILE_WIDTH) < ctx.canvas.width) {
         this.x += GameBoard.TILE_WIDTH;
     }
-}
+};
 
 Player.prototype.moveUp = function() {
     // If we're not in the top row, then we can move up.
@@ -673,7 +677,7 @@ Player.prototype.moveUp = function() {
         this.row--;
         this.y -= GameBoard.TILE_HEIGHT;
     }
-}
+};
 
 Player.prototype.moveDown = function() {
     // If we're not in the bottom row, then we can move down.
@@ -681,7 +685,7 @@ Player.prototype.moveDown = function() {
         this.row++;
         this.y += GameBoard.TILE_HEIGHT;
     }
-}
+};
 
 Player.prototype.setNextSprite = function() {
     this.index++;
@@ -690,7 +694,7 @@ Player.prototype.setNextSprite = function() {
     }
     this.setSprite(this.info[this.index].sprite);
     scoreBoard.setSprite(this.info[this.index].sprite);
-}
+};
 
 Player.prototype.setPreviousSprite = function() {
     this.index--;
@@ -699,11 +703,11 @@ Player.prototype.setPreviousSprite = function() {
     }
     this.setSprite(this.info[this.index].sprite);
     scoreBoard.setSprite(this.info[this.index].sprite);
-}
+};
 
 Player.prototype.IsActive = function() {
     return (this.row <= (gameBoard.getBottomRow() - 2));
-}
+};
 
 //---------------------------------
 // Charms Pseudoclass.
@@ -744,7 +748,7 @@ Charm.prototype.render = function(width, height) {
             }
         }
     }
-}
+};
 
 Charm.prototype.drop = function() {
     // Charms are dropped beneath an enemy; find one in an acceptable position.
@@ -766,14 +770,14 @@ Charm.prototype.drop = function() {
         }
     }
     return false; // no enemy is in a position to drop.
-}
+};
 
 Charm.prototype.pickup = function() {
     gameBoard.playSound(gameBoard.sounds.charmpickup);
     scoreBoard.addPoints(this.points);
     charmsManager.resetCharmTimer(); // wait before dropping the next charm.
     this.visible = false;
-}
+};
 
 //---------------------------------
 // CharmsManager Pseudoclass.
@@ -795,7 +799,7 @@ CharmsManager.prototype.reset = function() {
     for (var i = 0; i < this.charms.length; ++i) {
         this.charms[i].visible = false;
     }
-}
+};
 
 CharmsManager.prototype.resetCharmTimer = function() {
     this.seconds = 0;
@@ -803,7 +807,7 @@ CharmsManager.prototype.resetCharmTimer = function() {
 
     // A variable delay determines when the next charm is actually dropped.
     this.delay = GameBoard.Random(CharmsManager.MIN_DELAY, CharmsManager.MAX_DELAY);
-}
+};
 
 CharmsManager.prototype.render = function() {
     this.charms.forEach(function(charm) {
@@ -814,7 +818,7 @@ CharmsManager.prototype.render = function() {
             charm.render(width, height);
         }
     });
-}
+};
 
 CharmsManager.prototype.update = function() {
     if (gameBoard.paused) {
@@ -831,7 +835,7 @@ CharmsManager.prototype.update = function() {
             }
         }
     }
-}
+};
 
 //---------------------------------
 // Stopwatch Pseudoclass.
@@ -840,12 +844,12 @@ CharmsManager.prototype.update = function() {
 // Constructor.
 function Stopwatch() {
     this.reset();
-};
+}
 
 // Pseudoclass methods.
 Stopwatch.prototype.start = function() {
     this.startTime = this.startTime ? this.startTime : Date.now();
-}
+};
 
 Stopwatch.prototype.stop = function() {
     // Update elapsed time before stopping the stopwatch, if necessary.
@@ -894,29 +898,29 @@ Dialog.prototype.init = function() {
     this.midX = this.x + (this.width / 2);
 
     this.visible = false;
-}
+};
 
 Dialog.prototype.render = function() {
     if (this.visible) {
         this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
         this.contents();
     }
-}
+};
 
 Dialog.prototype.show = function() {
     this.visible = true;
-}
+};
 
 Dialog.prototype.hide = function() {
     this.visible = false;
-}
+};
 
 Dialog.prototype.titleText = function(title, x, y) {
     ctx.fillStyle = 'red';
     ctx.textAlign = 'center';
     ctx.font = Dialog.TITLE_FONT;
     ctx.fillText(title, x, y);
-}
+};
 
 Dialog.prototype.startResumeGameText = function(y, again) {
     again = again || false;
@@ -928,7 +932,7 @@ Dialog.prototype.startResumeGameText = function(y, again) {
     ctx.fillText('Hit the space bar', this.midX, y += 45);
     ctx.fillText('to' + (gameBoard.resumeGame ? ' resume ' : ' ') + 'play' +
         (again ? ' again ' : ' ') + '...', this.midX, y += 27);
-}
+};
 
 // Draws a rounded rectangle using the current state of the canvas.
 // If you omit the last three params, it will draw a rectangle
@@ -973,7 +977,7 @@ Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke
     }
 
     ctx.globalAlpha = 1.0;
-}
+};
 
 //---------------------------------
 // GameRulesDialog Pseudoclass.
@@ -1016,7 +1020,7 @@ GameRulesDialog.prototype.contents = function() {
     ctx.fillText('   are used or the time is up', this.leftX, y += 27);
     ctx.fillText(Dialog.BULLET + ' Ctrl-up/down changes player', this.leftX, y += 34);
     this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
-}
+};
 
 //---------------------------------
 // HintsDialog Pseudoclass.
@@ -1059,7 +1063,7 @@ HintsDialog.prototype.contents = function() {
     ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 27);
     ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 27);
     this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
-}
+};
 
 //---------------------------------
 // AttributionDialog Pseudoclass.
@@ -1085,7 +1089,6 @@ AttributionDialog.ID = 2;
 // Pseudoclass methods.
 AttributionDialog.prototype.contents = function() {
     var y = this.y + 70;
-    var x = -35;
     this.titleText(Dialog.LEFT_ICON + ' Attribution' + Dialog.RIGHT_ICON, this.midX, y);
 
     ctx.font = Dialog.NORMAL_FONT;
@@ -1106,7 +1109,7 @@ AttributionDialog.prototype.contents = function() {
     ctx.fillText('   Modifications to Purple Player', this.leftX, y += 27);
 
     this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
-}
+};
 
 //---------------------------------
 // AttributionSoundsDialog Pseudoclass.
@@ -1132,7 +1135,6 @@ AttributionSoundsDialog.ID = 3;
 // Pseudoclass methods.
 AttributionSoundsDialog.prototype.contents = function() {
     var y = this.y + 70;
-    var x = -35;
     this.titleText(Dialog.LEFT_ICON + ' Attribution', this.midX, y);
 
     ctx.font = Dialog.NORMAL_FONT;
@@ -1151,7 +1153,7 @@ AttributionSoundsDialog.prototype.contents = function() {
     ctx.fillText('    By EdgardEdition, thud6.wav.', this.leftX, y += 27);
 
     this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
-}
+};
 
 //---------------------------------
 // GameOverDialog Pseudoclass.
@@ -1173,13 +1175,13 @@ GameOverDialog.OuttaLivesReason = 'Lives';
 // Pseudoclass methods.
 GameOverDialog.prototype.setReason = function(reason) {
     this.reason = reason;
-}
+};
 
 GameOverDialog.prototype.contents = function() {
     var y = this.y + 75;
     this.titleText('Game Over!', this.midX, y);
 
-    if (this.reason != null) {
+    if (this.reason !== null) {
         y += 30;
         ctx.font = Dialog.SMALL_FONT;
         ctx.fillText('(Outta ' + this.reason + ')', this.midX, y);
@@ -1187,7 +1189,7 @@ GameOverDialog.prototype.contents = function() {
 
     ctx.font = Dialog.NORMAL_FONT;
     this.startResumeGameText(y, true);
-}
+};
 
 //---------------------------------
 // Global Helpers.
@@ -1247,8 +1249,8 @@ document.addEventListener('keydown', function(e) {
     // Ensure event is not null.
     e = e || window.event;
 
-    var allowedKeys = { 27: 'esc', 32: 'space', 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+    var allowedKeys = { 27: 'esc', 32: 'space', 37: 'left', 38: 'up', 39: 'right', 40: 'down', 68: 'debug' };
 
-    gameBoard.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
+    gameBoard.handleInput(allowedKeys[e.keyCode]);
     player.handleInput(allowedKeys[e.keyCode], e.ctrlKey);
 });
