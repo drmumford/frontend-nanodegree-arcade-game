@@ -10,7 +10,7 @@ To view the source code select either the 'Clone in Desktop' or 'Download ZIP' o
 
 ## Game Information
 The object of the game is to get as many points as possible! The challenge is avoid the enemies and focus
-on the high point value events during the game (see Scoring below).
+on completing high point value tasks during the game (see Scoring below).
 
 Each game lasts two minutes and the player has four lives. When the game time has elapsed **or** the player
 has used all four lives, the game is over.
@@ -23,26 +23,24 @@ Selecting the Ctrl key while hitting the up or down arrow changes the active pla
 at any point in the game, even when it's paused, so you can learn the order of the players.
 
 ### Defeating Enemies
-When the player is hit my an enemy bug, the player is killed and sent back to home position on the board.
-But not always. Each player has a special *Super Power* over one enemy type. Your job is to figure
-out which player defeats which enemy.
+When the player is hit by an enemy, the player is killed and sent back to home position on the board.
+But not always... Each player has a *Super Power* that allows it to defeat one enemy type. Your job
+is to figure out which player defeats which enemy.
 
-> Hint: Each player has a coloring scheme that may help you figure out which enemy it can defeat.
+> Hint: Each player has a coloring scheme that will help you figure out which enemy it can defeat.
 
 > Changing the player on the fly to defeat enemies is the key to this game. Use your knowledge of the
 player order and quick fingers to change the player on the fly and defeat enemies (and get tons of points)!
 
 ### Scoring
 Points are awarded for the following:
-| Event                                            | Points   |
-| ------------------------------------------------ | --------:|
-| Each full second in play (not in the grass area) | 1000     |
-| Cleaning up after the ladybugs                   | 5000     |
-| Defeating a Enemy - Green                        | 2000     |
-| Defeating a Enemy - Blue                         | 4000     |
-| Defeating a Enemy - Yellow                       | 6000     |
-| Defeating a Enemy - Purple                       | 8000     |
-| Defeating a Enemy - Red                          | 10000    |
+* Each full second in play (not in the grass area), 1000 points
+* Cleaning up after the ladybugs, 5000 points
+* Defeating a Enemy - Green, 2000 points
+* Defeating a Enemy - Blue, 4000 points
+* Defeating a Enemy - Yellow, 6000 points
+* Defeating a Enemy - Purple, 8000 points
+* Defeating a Enemy - Red, 10000 points
 
 ### Help
 The Game Rules and Hints and much of the information below is available in-game. The rules are displayed
