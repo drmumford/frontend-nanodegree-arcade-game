@@ -1058,13 +1058,13 @@ HintsDialog.prototype.contents = function() {
     ctx.fillText('   reveal each characters power', this.leftX, y += 27);
     ctx.fillText('   to defeat certain enemies', this.leftX, y += 27);
     ctx.fillText(Dialog.BULLET + ' Play wisely! Points for ...', this.leftX, y += 34);
-    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 27);
-    ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 27);
-    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KILL_POINTS_GREEN, this.leftX, y += 27);
-    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KILL_POINTS_BLUE, this.leftX, y += 27);
-    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 27);
-    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 27);
-    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 27);
+    ctx.fillText('   Cleaning up after ladybugs - ' + Charm.DEFAULT_POINTS, this.leftX, y += 30);
+    ctx.fillText('   Each full second in play - ' + GameBoard.POINTS_PER_SECOND, this.leftX, y += 30);
+    ctx.fillText('   Defeating Green Enemy - ' + Enemy.KILL_POINTS_GREEN, this.leftX, y += 30);
+    ctx.fillText('   Defeating Blue Enemy - ' + Enemy.KILL_POINTS_BLUE, this.leftX, y += 30);
+    ctx.fillText('   Defeating Yellow Enemy - ' + Enemy.KILL_POINTS_YELLOW, this.leftX, y += 30);
+    ctx.fillText('   Defeating Purple Enemy - ' + Enemy.KILL_POINTS_PURPLE, this.leftX, y += 30);
+    ctx.fillText('   Defeating Red Enemy - ' + Enemy.KILL_POINTS_RED, this.leftX, y += 30);
     this.startResumeGameText(gameBoard.getHeight() + GameBoard.TILE_HEIGHT);
 };
 
