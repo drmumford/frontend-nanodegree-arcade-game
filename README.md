@@ -1,10 +1,10 @@
 # Udacity Frogger, by Dave Mumford
 
 This is the 3rd project in Udacity's Frontend Web Developer Nanodegree curriculum. The purpose of this
-project is to showcase student's Object-Oriented JavaScript and HTML5 Canvas skills and, of course, to
-create a game that is playable, bug free and fun!
+project is to showcase a student's Object-Oriented JavaScript and HTML5 Canvas skills. Of course, it's
+also to create a game that is creative, playable, bug free and fun to play!
 
-Play 'Udacity Frogger' online at [http://www.ironwoodlife.com/frogger](http://www.ironwoodlife.com/frogger/).
+Play 'Udacity Frogger' online at [drmumford.github.io/frontend-nanodegree-arcade-game](http://drmumford.github.io/frontend-nanodegree-arcade-game/).
 
 View the source code by selecting either the 'Clone in Desktop' or 'Download ZIP' options above.
 
@@ -25,13 +25,13 @@ Change the player by selecting the Ctrl key while hitting the up or down arrow k
 at any point in the game (even when it's paused) so you can learn the order of the players.
 
 ### Defeating Enemies
-When the player is hit by an enemy, the player is killed and sent back to home position on the board.
-Usually, but not always. Each player has a **_Super Power_** that allows it to defeat one enemy type. Your job
-is to figure out which player defeats which enemy.
+When the player is hit by an enemy, a game life is deducted and the player is sent back to home
+position on the board. Usually. But not always. Each player has a special **_Super Power_** that
+allows it to defeat one enemy type. Your job is to figure out which player defeats which enemy.
 
 > Hint: The coloring scheme of a player *may* help you figure out which enemy it can defeat.
 
-> Changing the player on the fly to defeat enemies is the key to this game. Use your knowledge of the
+Changing the player on the fly to defeat enemies is the key to this game. Use your knowledge of the
 player order and your lightning quick fingers to change the player on the fly and defeat enemies!
 
 ### Picking Up After the Enemies
@@ -54,7 +54,7 @@ The Game Rules and Hints are available in-game. The rules are displayed when the
 for the first time and whenever the 'Game Info' link is selected. If you want to get a quick review
 of the rules *while* you're playing, just pause the game first using the spacebar.
 
-> There are multiple pages of information that can be accessed using the left and right arrow keys.
+> There are multiple pages of information. Scroll through them using the left and right arrow keys.
 
 Enjoy the game and Good Luck!
 
