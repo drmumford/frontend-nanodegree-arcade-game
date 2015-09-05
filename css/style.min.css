@@ -1,0 +1,6 @@
+body{text-align:center;background-color:black;}
+header{font:60px/80px 'Luckiest Guy', cursive;}
+.container{background-color:#ffd800;width:505px;margin:auto;color:red;border-radius:15px;}
+footer{font:20px/40px 'Luckiest Guy', cursive;}
+a:link{color:blue;background-color:transparent;text-decoration:none;}
+a:hover{color:blue;background-color:transparent;text-decoration:underline;cursor:pointer;}
