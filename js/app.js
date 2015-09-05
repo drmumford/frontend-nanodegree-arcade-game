@@ -880,7 +880,7 @@ function Dialog() {
 }
 
 // Pseudoclass properties.
-Dialog.LEFT_MARGIN = 0;
+Dialog.LEFT_MARGIN = GameBoard.TILE_WIDTH / 2;
 Dialog.TITLE_FONT = '64px Luckiest Guy';
 Dialog.NORMAL_FONT = '25px Luckiest Guy';
 Dialog.SMALL_FONT = '20px Luckiest Guy';
@@ -890,12 +890,15 @@ Dialog.RIGHT_ICON = String.fromCodePoint(0x203A); // ›
 Dialog.ALPHA = 0.83;
 
 // Pseudoclass methods.
-Dialog.prototype.init = function() {
-    this.width = gameBoard.getWidth();
-    this.height = gameBoard.getHeight() / 2;
+Dialog.prototype.init = function(x, y, width, height, radius) {
+    // If position and size aren't provided, use defaults.
+    this.width = width || (GameBoard.TILE_WIDTH * gameBoard.columns);
+    this.height = height || (GameBoard.TILE_HEIGHT * gameBoard.rows + bottomBuffer);
 
-    this.x = GameBoard.TILE_WIDTH / 2;
-    this.y = this.height / 2;
+    this.x = x || 0;
+    this.y = y || (topBuffer + ScoreBoard.HEIGHT);
+
+    this.radius = radius || 0; // default is square corners.
 
     this.leftX = this.x + Dialog.LEFT_MARGIN;
     this.midX = this.x + (this.width / 2);
@@ -905,7 +908,7 @@ Dialog.prototype.init = function() {
 
 Dialog.prototype.render = function() {
     if (this.visible) {
-        this.drawDialog(this.x, this.y, this.width, this.height, 15, true, true);
+        this.drawDialog(this.x, this.y, this.width, this.height, this.radius, true, true);
         this.contents();
     }
 };
@@ -989,12 +992,6 @@ Dialog.prototype.drawDialog = function(x, y, width, height, radius, fill, stroke
 // Constructor.
 function GameRulesDialog() {
     this.init();
-
-    var extraWidth = 88; // make this a constant.
-    this.width = this.width + extraWidth; // a bit wider than default.
-    this.height = this.height + 315; // a bit longer too.
-    this.x = this.x - (extraWidth / 2); // to keep centered.
-    this.y = this.y - 28;
 }
 
 GameRulesDialog.prototype = Object.create(Dialog.prototype);
@@ -1032,12 +1029,6 @@ GameRulesDialog.prototype.contents = function() {
 // Constructor.
 function HintsDialog() {
     this.init();
-
-    var extraWidth = 88; // make this a constant.
-    this.width = this.width + extraWidth; // a bit wider than default.
-    this.height = this.height + 315; // a bit longer too.
-    this.x = this.x - (extraWidth / 2); // to keep centered.
-    this.y = this.y - 28;
 }
 
 HintsDialog.prototype = Object.create(Dialog.prototype);
@@ -1075,12 +1066,6 @@ HintsDialog.prototype.contents = function() {
 // Constructor.
 function AttributionDialog() {
     this.init();
-
-    var extraWidth = 88; // make this a constant.
-    this.width = this.width + extraWidth; // a bit wider than default.
-    this.height = this.height + 315; // a bit longer too.
-    this.x = this.x - (extraWidth / 2); // to keep centered.
-    this.y = this.y - 28;
 }
 
 AttributionDialog.prototype = Object.create(Dialog.prototype);
@@ -1121,12 +1106,6 @@ AttributionDialog.prototype.contents = function() {
 // Constructor.
 function AttributionSoundsDialog() {
     this.init();
-
-    var extraWidth = 88; // make this a constant.
-    this.width = this.width + extraWidth; // a bit wider than default.
-    this.height = this.height + 315; // a bit longer too.
-    this.x = this.x - (extraWidth / 2); // to keep centered.
-    this.y = this.y - 28;
 }
 
 AttributionSoundsDialog.prototype = Object.create(Dialog.prototype);
@@ -1168,8 +1147,18 @@ AttributionSoundsDialog.prototype.contents = function() {
 
 // Constructor.
 function GameOverDialog() {
+    var x = GameBoard.TILE_WIDTH / 2;
+    var y = gameBoard.getHeight() / 4;
+
+    var width = gameBoard.getWidth();
+    var height = gameBoard.getHeight() / 2;
+
+    var radius = 15; // rounded corners.
+
+    this.init(x, y, width, height, radius);
+
+    // The reason the game is over; outta time or lives.
     this.reason = null;
-    this.init();
 }
 
 GameOverDialog.prototype = Object.create(Dialog.prototype);

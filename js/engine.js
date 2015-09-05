@@ -202,4 +202,5 @@ var Engine = (function(global) {
      */
     global.ctx = ctx;
     global.topBuffer = topBuffer;
+    global.bottomBuffer = bottomBuffer;
 })(this);
